@@ -1,0 +1,17 @@
+<table>
+    <tr>
+        <th>Roll Number</th>
+        <th>Name</th>
+        <th>Present</th>
+    </tr>
+    {% for student in students %}
+    <tr>
+        <td>{{ student.roll_number.roll_rumber }}</td>
+        <td>{{ student.roll_Number.name }}</td>
+        <td>
+            <input type="hidden" name="roll_numbers" value="{{ student.Roll_Number.Roll_Number }}">
+            <input type="checkbox" name="present_students" value="{{ student.Roll_Number.Roll_Number }}">
+        </td>
+    </tr>
+    {% endfor %}
+</table>

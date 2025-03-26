@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Faculty Information</title>
+    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+    <script src="https://unpkg.com/htmx.org/dist/ext/response-targets.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        document.body.addEventListener('htmx:configRequest', function(evt) {
+            // Session ID is automatically included in cookies
+        });
+
+        document.body.addEventListener('htmx:afterSettle', function(evt) {
+            if (evt.detail.xhr.status === 200 && evt.detail.xhr.getResponseHeader('HX-Redirect')) {
+                window.location.href = evt.detail.xhr.getResponseHeader('HX-Redirect');
+            }
+        });
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const session_id = document.cookie.split('; ').find(row => row.startsWith('session_id='));
+            if (!session_id) {
+                window.location.href = '/staff/login/';
+            }
+        });
+
+        // Add theme colors
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            50: '#f0f9ff',
+                            100: '#e0f2fe',
+                            200: '#bae6fd',
+                            300: '#7dd3fc',
+                            400: '#38bdf8',
+                            500: '#0ea5e9',
+                            600: '#0284c7',
+                            700: '#0369a1',
+                            800: '#075985',
+                            900: '#0c4a6e',
+                        }
+                    },
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-gray-50 text-gray-800">
+    <!-- CSRF Token for HTMX -->
+    <script>
+        document.body.addEventListener('htmx:configRequest', function(event) {
+            event.detail.headers['X-CSRFToken'] = '{{ csrf_token }}';
+        });
+    </script>
+
+<style>
+    .header-animation {
+      transition: all 0.3s ease;
+    }
+    
+    .back-button {
+      transition: transform 0.2s ease;
+    }
+    
+    .back-button:active {
+      transform: scale(0.9);
+    }
+    
+    .pill-badge {
+      animation: fadeIn 0.5s ease-out;
+    }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+  
+  <header class="bg-gradient-to-r from-blue-800 to-blue-600 text-white shadow-lg fixed top-0 left-0 right-0 z-50 header-animation" style="height: 64px; min-height: 64px;">
+    <div class="flex items-center justify-between h-full px-3">
+      <!-- Back button with animation -->
+      <a href="/staff/dash/" class="back-button flex items-center justify-center bg-white/10 rounded-full p-1.5 hover:bg-white/20">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+        </svg>
+      </a>
+      
+      <!-- Title - centered -->
+      <h1 class="text-lg font-bold">Faculty Information</h1>
+      
+      <!-- Roll number pill with animation -->
+      <div class="pill-badge bg-white/20 rounded-full px-3 py-0.5">
+        <p class="text-xs font-medium">{{ staff_id }}</p>
+      </div>
+    </div>
+  </header>
+  
+  <!-- Spacer to prevent content from hiding under fixed header -->
+  <div style="height: 64px;"></div>
+    
+    <!-- Main container -->
+    <div class="max-w-5xl mx-auto px-4 py-6">
+        <!-- Form -->
+        <form id="personalInfoForm" 
+              hx-post="/faculty/"  
+              hx-target="#formMessages"
+              hx-swap="innerHTML"
+              class="space-y-10">
+         
+            {% csrf_token %}
+                
+            <!-- Student Basic Info Section -->
+            <div class="form-section bg-white shadow-sm rounded-xl p-6 border border-gray-100">
+                <h2 class="text-xl font-semibold text-primary-800 section-heading mb-6">Basic Information</h2>
+                
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <!-- Roll Number -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Staff ID</label>
+                        <input type="number" 
+                               name="staff_id" 
+                               value="{{ personal_info.staff_id|default:staff_id }}" 
+                               readonly
+                               class="block w-full rounded-md border-gray-300 bg-gray-50 px-4 py-2 text-gray-500 shadow-sm">
+                    </div>
+
+                    
+
+                    <!-- Student Type -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Designation</label>
+                        <select name="designation"
+                                class="block w-full rounded-md border-gray-300 px-4 py-2 shadow-sm focus:ring-primary-500 focus:border-primary-500">
+                            <option value="Professor" {% if personal_info.designation == 'Professor' %}selected{% endif %}>Professor</option>
+                            <option value="Associate Professor" {% if personal_info.designation == 'Associate Professor' %}selected{% endif %}>Associate Professor</option>
+                            <option value="Assistant Professor" {% if personal_info.designation == 'Assistant Professor' %}selected{% endif %}>Assistant Professor</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Personal Details Section -->
+            <div class="form-section bg-white shadow-sm rounded-xl p-6 border border-gray-100">
+                <h2 class="text-xl font-semibold text-primary-800 section-heading mb-6">Personal Details</h2>
+                
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <!-- Name Fields -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Name<span class="text-red-500">*</span></label>
+                        <input type="text" 
+                               name="name" 
+                               required
+                               value="{{ personal_info.name|default:'' }}"
+                               class="block w-full rounded-md border-gray-300 px-4 py-2 shadow-sm focus:ring-primary-500 focus:border-primary-500">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Department<span class="text-red-500">*</span></label>
+                        <input type="text" 
+                               id="department" 
+                               name="department" 
+                               required
+                               value="{{ personal_info.department|default:'' }}"
+                               class="block w-full rounded-md border-gray-300 px-4 py-2 shadow-sm focus:ring-primary-500 focus:border-primary-500">
+                    </div>
+
+                    <!-- DOB -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Date of Birth<span class="text-red-500">*</span></label>
+                        <input type="date" 
+                               name="date_of_birth" 
+                               required
+                               value="{{ personal_info.date_of_birth|date:'Y-m-d'|default:'' }}"
+                               class="block w-full rounded-md border-gray-300 px-4 py-2 shadow-sm focus:ring-primary-500 focus:border-primary-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Date of Joining<span class="text-red-500">*</span></label>
+                        <input type="date" 
+                               name="date_of_joining" 
+                               required
+                               value="{{ personal_info.date_of_joining|date:'Y-m-d'|default:'' }}"
+                               class="block w-full rounded-md border-gray-300 px-4 py-2 shadow-sm focus:ring-primary-500 focus:border-primary-500">
+                    </div>
+
+                    
+                    <!-- Contact Details -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Mobile Number<span class="text-red-500">*</span></label>
+                        <input type="tel" 
+                               name="contact_number" 
+                               required
+                               value="{{ personal_info.contact_number|default:'' }}"
+                               class="block w-full rounded-md border-gray-300 px-4 py-2 shadow-sm focus:ring-primary-500 focus:border-primary-500">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Email<span class="text-red-500">*</span></label>
+                        <input type="email" 
+                               name="email" 
+                               required
+                               value="{{ personal_info.email|default:'' }}"
+                               class="block w-full rounded-md border-gray-300 px-4 py-2 shadow-sm focus:ring-primary-500 focus:border-primary-500">
+                    </div>
+                </div>
+            </div>
+
+            
+
+            
+            <!-- Parent Information Section 
+            <div class="form-section bg-white shadow-sm rounded-xl p-6 border border-gray-100">
+                <h2 class="text-xl font-semibold text-primary-800 section-heading mb-6">Parent Information</h2> -->
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <!-- Father's Details -->
+                    <div class="space-y-4 bg-gray-50 p-4 rounded-lg">
+                        <h3 class="text-base font-medium text-primary-700">Qualification</h3>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Qualification<span class="text-red-500">*</span></label>
+                            <input type="text" 
+                                   name="qualification" 
+                                   required
+                                   value="{{ personal_info.qualification|default:'' }}"
+                                   class="block w-full rounded-md border-gray-300 px-4 py-2 shadow-sm focus:ring-primary-500 focus:border-primary-500">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Specialization<span class="text-red-500">*</span></label>
+                            <input type="text" 
+                                   name="specialization" 
+                                   required
+                                   value="{{ personal_info.specialization|default:'' }}"
+                                   class="block w-full rounded-md border-gray-300 px-4 py-2 shadow-sm focus:ring-primary-500 focus:border-primary-500">
+                        </div>
+                       
+                    </div>
+        
+                    <!-- Mother's Details
+                    <div class="space-y-4 bg-gray-50 p-4 rounded-lg">
+                        <h3 class="text-base font-medium text-primary-700">Mother's Details</h3> -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Present Address<span class="text-red-500">*</span></label>
+                            <input type="text" 
+                                   name="present_address" 
+                                   required
+                                   value="{{ personal_info.present_address|default:'' }}"
+                                   class="block w-full rounded-md border-gray-300 px-4 py-2 shadow-sm focus:ring-primary-500 focus:border-primary-500">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Teaching Research Experience<span class="text-red-500">*</span></label>
+                            <input type="number" 
+                                   name="teaching_research_experience" 
+                                   required
+                                   value="{{ personal_info.teaching_research_experience|default:'' }}"
+                                   class="block w-full rounded-md border-gray-300 px-4 py-2 shadow-sm focus:ring-primary-500 focus:border-primary-500">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Industry Experience<span class="text-red-500">*</span></label>
+                            <input type="number" 
+                                   name="industry_experience" 
+                                   required
+                                   value="{{ personal_info.industry_experience|default:'' }}"
+                                   class="block w-full rounded-md border-gray-300 px-4 py-2 shadow-sm focus:ring-primary-500 focus:border-primary-500">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        
+           
+<!-- Form Messages -->
+<div id="formMessages" class="mt-6 text-lg font-semibold text-purple-700"></div>
+
+
+<!-- Submit Buttons - Fixed positioning to ensure visibility -->
+<div class="mt-10 flex justify-end items-center sticky bottom-0 bg-white p-4 shadow-md rounded-lg">
+    
+    <button type="submit" 
+    id="saveButton"
+    class="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+Save Information
+<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 ml-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+</svg>
+</button>
+
+</div>
+
+</form>
+
+<!-- Extra padding at bottom to prevent button from covering content -->
+<div class="pb-20"></div>
+
+<!-- Page End -->
+</div>
+
+<script>
+    // Toggle disability type field visibility
+    document.addEventListener('DOMContentLoaded', function() {
+        const disabilityYes = document.getElementById('differently_abled_yes');
+        const disabilityNo = document.getElementById('differently_abled_no');
+        const disabilityTypeContainer = document.getElementById('disability_type_container');
+        
+        function toggleDisabilityType() {
+            if (disabilityYes.checked) {
+                disabilityTypeContainer.classList.remove('hidden');
+            } else {
+                disabilityTypeContainer.classList.add('hidden');
+            }
+        }
+        
+        disabilityYes.addEventListener('change', toggleDisabilityType);
+        disabilityNo.addEventListener('change', toggleDisabilityType);
+        
+        // Same address functionality
+        const sameAddressCheckbox = document.getElementById('sameAsPermanent');
+        const communicationAddressFields = document.getElementById('communicationAddress');
+        
+       // Modify the same address functionality
+sameAddressCheckbox.addEventListener('change', function() {
+    if (this.checked) {
+        // Copy permanent address fields to communication address fields
+        const permanentFields = [
+            { src: 'permanent_area_type', dest: 'communication_area_type' },
+            { src: 'permanent_door_number', dest: 'communication_door_number' },
+            { src: 'permanent_street_name', dest: 'communication_street_name' },
+            { src: 'permanent_district', dest: 'communication_district' },
+            { src: 'permanent_state', dest: 'communication_state' },
+            { src: 'permanent_pincode', dest: 'communication_pincode' }
+        ];
+        
+        permanentFields.forEach(field => {
+            const srcElement = document.getElementsByName(field.src)[0];
+            const destElement = document.getElementsByName(field.dest)[0];
+            
+            if (srcElement && destElement) {
+                if (srcElement.tagName === 'SELECT') {
+                    destElement.value = srcElement.value;
+                } else {
+                    destElement.value = srcElement.value;
+                }
+            }
+        });
+        
+        // Make communication address fields read-only instead of disabled
+        communicationAddressFields.querySelectorAll('input, select').forEach(input => {
+            input.setAttribute('readonly', 'readonly');
+            // For select elements, we need a different approach since readonly doesn't work
+            if (input.tagName === 'SELECT') {
+                input.style.pointerEvents = 'none';
+                input.style.backgroundColor = '#f3f4f6';
+            } else {
+                input.style.backgroundColor = '#f3f4f6';
+            }
+        });
+        
+        communicationAddressFields.classList.add('opacity-75');
+    } else {
+        // Enable communication address fields
+        communicationAddressFields.querySelectorAll('input, select').forEach(input => {
+            input.removeAttribute('readonly');
+            if (input.tagName === 'SELECT') {
+                input.style.pointerEvents = 'auto';
+                input.style.backgroundColor = '';
+            } else {
+                input.style.backgroundColor = '';
+            }
+        });
+        
+        communicationAddressFields.classList.remove('opacity-75');
+    }
+});
+
+        // Ensure submit button is visible by scrolling to it when form is too long
+        document.getElementById('saveButton').scrollIntoView({
+            behavior: 'smooth',
+            block: 'end'
+        });
+    });
+</script>
+</body>
+</html>

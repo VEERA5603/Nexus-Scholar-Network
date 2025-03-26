@@ -1,0 +1,353 @@
+<!-- visualization.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Faculty Data Visualization</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://unpkg.com/htmx.org@1.9.2"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .chart-container {
+            width: 100%;
+            height: 400px;
+            margin-bottom: 30px;
+        }
+        .card {
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+            padding: 20px;
+            background-color: #fff;
+        }
+        .tab-btn {
+            padding: 10px 15px;
+            background-color: #f0f0f0;
+            border: none;
+            border-radius: 4px;
+            margin-right: 5px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .tab-btn.active {
+            background-color: #4a6baf;
+            color: white;
+        }
+        .tab-content {
+            display: none;
+            padding: 15px 0;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        .header {
+            background-color: #4a6baf;
+            color: white;
+            padding: 15px 0;
+            margin-bottom: 20px;
+        }
+        h1, h3 {
+            margin-top: 0;
+        }
+        .mt-4 {
+            margin-top: 20px;
+        }
+        .mb-4 {
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="container">
+            <h1>Faculty Data Visualization Dashboard</h1>
+            <p>Welcome, {{ name }}. Here you can visualize your academic data.</p>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="tabs-container">
+            <div class="tab-buttons mb-4">
+                <button class="tab-btn active" data-tab="research-guidance">Research Guidance</button>
+                <button class="tab-btn" data-tab="academic-events">Academic Events</button>
+                <button class="tab-btn" data-tab="publications">Publications</button>
+                <button class="tab-btn" data-tab="research-projects">Research Projects</button>
+                <button class="tab-btn" data-tab="experience">Experience</button>
+            </div>
+
+            <!-- Research Guidance -->
+            <div id="research-guidance" class="tab-content active">
+                <div class="card">
+                    <h3>Research Guidance</h3>
+                    <div class="chart-container">
+                        <canvas id="researchGuidanceChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Academic Events -->
+            <div id="academic-events" class="tab-content">
+                <div class="card">
+                    <h3>Academic Events</h3>
+                    <div class="chart-container">
+                        <canvas id="academicEventsChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Publications -->
+            <div id="publications" class="tab-content">
+                <div class="card">
+                    <h3>Publications</h3>
+                    <div class="chart-container">
+                        <canvas id="publicationsChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Research Projects -->
+            <div id="research-projects" class="tab-content">
+                <div class="card">
+                    <h3>Research Projects Count</h3>
+                    <div class="chart-container">
+                        <canvas id="researchProjectsCountChart"></canvas>
+                    </div>
+                </div>
+                <div class="card">
+                    <h3>Research Projects Funding</h3>
+                    <div class="chart-container">
+                        <canvas id="researchProjectsFundingChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Experience -->
+            <div id="experience" class="tab-content">
+                <div class="card">
+                    <h3>Professional Experience</h3>
+                    <div class="chart-container">
+                        <canvas id="experienceChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Tab functionality
+            const tabButtons = document.querySelectorAll('.tab-btn');
+            const tabContents = document.querySelectorAll('.tab-content');
+
+            tabButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    // Remove active class from all buttons and contents
+                    tabButtons.forEach(btn => btn.classList.remove('active'));
+                    tabContents.forEach(content => content.classList.remove('active'));
+                    
+                    // Add active class to clicked button and corresponding content
+                    button.classList.add('active');
+                    const tabId = button.getAttribute('data-tab');
+                    document.getElementById(tabId).classList.add('active');
+                });
+            });
+
+            // Load initial data
+            loadResearchGuidanceData();
+            
+            // Add event listeners for tab changes with HTMX to load data on demand
+            document.querySelector('[data-tab="research-guidance"]').addEventListener('click', loadResearchGuidanceData);
+            document.querySelector('[data-tab="academic-events"]').addEventListener('click', loadAcademicEventsData);
+            document.querySelector('[data-tab="publications"]').addEventListener('click', loadPublicationsData);
+            document.querySelector('[data-tab="research-projects"]').addEventListener('click', loadResearchProjectsData);
+            document.querySelector('[data-tab="experience"]').addEventListener('click', loadExperienceData);
+        });
+
+        // Chart instances
+        let researchGuidanceChart;
+        let academicEventsChart;
+        let publicationsChart;
+        let researchProjectsCountChart;
+        let researchProjectsFundingChart;
+        let experienceChart;
+
+        // Functions to load data with HTMX and create charts
+        function loadResearchGuidanceData() {
+            fetch('/visualization/data/research_guidance/')
+                .then(response => response.json())
+                .then(data => {
+                    if (researchGuidanceChart) {
+                        researchGuidanceChart.destroy();
+                    }
+                    
+                    const ctx = document.getElementById('researchGuidanceChart').getContext('2d');
+                    researchGuidanceChart = new Chart(ctx, {
+                        type: 'bar',
+                        data: data,
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            scales: {
+                                y: {
+                                    beginAtZero: true,
+                                    title: {
+                                        display: true,
+                                        text: 'Number of Students'
+                                    }
+                                },
+                                x: {
+                                    title: {
+                                        display: true,
+                                        text: 'Degree'
+                                    }
+                                }
+                            }
+                        }
+                    });
+                })
+                .catch(error => console.error('Error loading research guidance data:', error));
+        }
+
+        function loadAcademicEventsData() {
+            fetch('/visualization/data/academic_events/')
+                .then(response => response.json())
+                .then(data => {
+                    if (academicEventsChart) {
+                        academicEventsChart.destroy();
+                    }
+                    
+                    const ctx = document.getElementById('academicEventsChart').getContext('2d');
+                    academicEventsChart = new Chart(ctx, {
+                        type: 'bar',
+                        data: data,
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            scales: {
+                                y: {
+                                    beginAtZero: true,
+                                    title: {
+                                        display: true,
+                                        text: 'Count'
+                                    }
+                                }
+                            }
+                        }
+                    });
+                })
+                .catch(error => console.error('Error loading academic events data:', error));
+        }
+
+        function loadPublicationsData() {
+            fetch('/visualization/data/publications/')
+                .then(response => response.json())
+                .then(data => {
+                    if (publicationsChart) {
+                        publicationsChart.destroy();
+                    }
+                    
+                    const ctx = document.getElementById('publicationsChart').getContext('2d');
+                    publicationsChart = new Chart(ctx, {
+                        type: 'pie',
+                        data: data,
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: {
+                                    position: 'right'
+                                }
+                            }
+                        }
+                    });
+                })
+                .catch(error => console.error('Error loading publications data:', error));
+        }
+
+        function loadResearchProjectsData() {
+            fetch('/visualization/data/research_projects/')
+                .then(response => response.json())
+                .then(data => {
+                    if (researchProjectsCountChart) {
+                        researchProjectsCountChart.destroy();
+                    }
+                    if (researchProjectsFundingChart) {
+                        researchProjectsFundingChart.destroy();
+                    }
+                    
+                    const countCtx = document.getElementById('researchProjectsCountChart').getContext('2d');
+                    researchProjectsCountChart = new Chart(countCtx, {
+                        type: 'doughnut',
+                        data: data.counts,
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: {
+                                    position: 'right'
+                                }
+                            }
+                        }
+                    });
+                    
+                    const fundingCtx = document.getElementById('researchProjectsFundingChart').getContext('2d');
+                    researchProjectsFundingChart = new Chart(fundingCtx, {
+                        type: 'bar',
+                        data: data.amounts,
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            scales: {
+                                y: {
+                                    beginAtZero: true,
+                                    title: {
+                                        display: true,
+                                        text: 'Amount (₹)'
+                                    }
+                                }
+                            }
+                        }
+                    });
+                })
+                .catch(error => console.error('Error loading research projects data:', error));
+        }
+
+        function loadExperienceData() {
+            fetch('/visualization/data/experience/')
+                .then(response => response.json())
+                .then(data => {
+                    if (experienceChart) {
+                        experienceChart.destroy();
+                    }
+                    
+                    const ctx = document.getElementById('experienceChart').getContext('2d');
+                    experienceChart = new Chart(ctx, {
+                        type: 'polarArea',
+                        data: data,
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: {
+                                    position: 'right'
+                                }
+                            }
+                        }
+                    });
+                })
+                .catch(error => console.error('Error loading experience data:', error));
+        }
+    </script>
+</body>
+</html>
