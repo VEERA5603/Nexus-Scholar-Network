@@ -1,0 +1,184 @@
+<div class="fade-in-up">
+    <!-- Sophisticated Breadcrumb 
+    <nav class="flex mb-8" aria-label="Breadcrumb">
+        <ol class="inline-flex items-center space-x-2 text-sm font-medium text-[#002147]">
+            <li class="inline-flex items-center">
+                <a hx-get="{% url 'activities_list' %}"
+                   hx-target="#main-content"
+                   hx-push-url="true"
+                   class="inline-flex items-center hover:text-[#FFD700] transition-colors">
+                    <i class="fas fa-home mr-2"></i>
+                    Activities
+                </a>
+            </li>
+            <li class="inline-flex items-center">
+                <i class="fas fa-chevron-right mx-2 text-[#002147]/50"></i>
+                <a hx-get="{% url 'year_activities' year=activity.academic_year.year %}"
+                   hx-target="#main-content"
+                   hx-push-url="true"
+                   class="hover:text-[#FFD700] transition-colors">
+                    {{ activity.academic_year.year }}
+                </a>
+            </li>
+            <li class="inline-flex items-center">
+                <i class="fas fa-chevron-right mx-2 text-[#002147]/50"></i>
+                <span class="font-semibold">Details</span>
+            </li>
+        </ol>
+    </nav> -->
+
+    <!-- Activity Header with Decorative Elements -->
+    <div class="relative mb-12">
+        <div class="absolute -left-8 top-0 h-full w-1 bg-gradient-to-b from-[#FFD700] to-[#002147]"></div>
+        <div>
+            <div class="flex flex-wrap items-center justify-between gap-4 mb-4">
+                <h1 class="text-3xl font-bold text-[#002147] flex items-center">
+                    <span class="bg-[#002147] text-[#FFD700] p-2 rounded-lg mr-4">
+                        <i class="fas fa-scroll"></i>
+                    </span>
+                    {{ activity.title }}
+                </h1>
+                <div class="flex items-center space-x-3">
+                    <span class="bg-[#FFD700] text-[#002147] px-3 py-1 rounded-full text-sm font-bold">
+                        {{ activity.date|date:"F j, Y" }}
+                    </span>
+                    <span class="bg-[#002147] text-[#FFD700] px-3 py-1 rounded-full text-sm font-bold">
+                        {{ activity.academic_year.year }}
+                    </span>
+                </div>
+            </div>
+            <div class="ml-16 border-t border-[#FFD700]/20 pt-2">
+                <p class="text-[#002147]/80 italic">
+                    Department of Information Technology • Annamalai University
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Activity Content Container -->
+    <div class="bg-white/80 backdrop-blur-sm rounded-xl shadow-sm border border-[#002147]/10 overflow-hidden mb-12">
+        <!-- Description Section -->
+        <div class="p-8 border-b border-[#002147]/10">
+            <h3 class="text-xl font-semibold text-[#002147] mb-4 flex items-center">
+                <i class="fas fa-align-left text-[#FFD700] mr-3"></i>
+                Activity Description
+            </h3>
+            <div class="prose max-w-none text-[#002147] ml-8">
+                {{ activity.description|linebreaks }}
+            </div>
+        </div>
+        
+        <!-- Gallery Section -->
+        {% if activity.images.all %}
+        <div class="p-8">
+            <h3 class="text-xl font-semibold text-[#002147] mb-6 flex items-center">
+                <i class="fas fa-images text-[#FFD700] mr-3"></i>
+                Event Gallery
+            </h3>
+            
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                {% for image in activity.images.all %}
+                <div class="relative overflow-hidden rounded-lg border border-[#002147]/10 shadow-md gallery-item h-64">
+                    <img src="{{ image.image.url }}" 
+                         alt="{{ image.caption|default:activity.title }}"
+                         class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110">
+                    
+                    <!-- Image Caption Overlay -->
+                    {% if image.caption %}
+                    <div class="gallery-caption absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent flex items-end p-4 opacity-0 transition-opacity duration-300">
+                        <p class="text-white text-sm">{{ image.caption }}</p>
+                    </div>
+                    {% endif %}
+                    
+                    <!-- View Fullscreen Button 
+                    <button class="absolute top-2 right-2 bg-black/50 text-white p-2 rounded-full hover:bg-black/70 transition-colors"
+                            onclick="openFullscreen('{{ image.image.url }}', '{{ image.caption|default:activity.title }}')">
+                        <i class="fas fa-expand text-sm"></i>
+                    </button>-->
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Back Button with Enhanced Design -->
+    <div class="text-center">
+        <button hx-get="{% url 'year_activities' year=activity.academic_year.year %}"
+                hx-target="#main-content"
+                hx-push-url="true"
+                class="inline-flex items-center px-6 py-3 bg-gradient-to-r from-[#002147] to-[#003366] hover:from-[#003366] hover:to-[#002147] text-white font-medium rounded-lg shadow-lg transition-all duration-300 hover:shadow-xl">
+            <i class="fas fa-arrow-left mr-3 transition-transform hover:-translate-x-1"></i>
+            Back to {{ activity.academic_year.year }} Activities
+        </button>
+    </div>
+</div>
+
+<!-- Fullscreen Image Viewer Modal -->
+<div id="image-modal" class="fixed inset-0 bg-black/90 z-50 hidden items-center justify-center p-4">
+    <div class="relative max-w-4xl w-full max-h-[90vh]">
+        <button onclick="closeFullscreen()" 
+                class="absolute -top-12 right-0 text-white hover:text-[#FFD700] text-2xl transition-colors">
+            <i class="fas fa-times"></i>
+        </button>
+        <img id="modal-image" src="" alt="" class="w-full h-full object-contain">
+        <p id="modal-caption" class="text-white text-center mt-4"></p>
+    </div>
+</div>
+
+<script>
+    // Fullscreen image viewer functions
+    function openFullscreen(src, caption) {
+        const modal = document.getElementById('image-modal');
+        const modalImg = document.getElementById('modal-image');
+        const modalCaption = document.getElementById('modal-caption');
+        
+        modalImg.src = src;
+        modalCaption.textContent = caption;
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+        document.body.style.overflow = 'hidden';
+    }
+    
+    function closeFullscreen() {
+        const modal = document.getElementById('image-modal');
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+        document.body.style.overflow = '';
+    }
+    
+    // Close modal on ESC key
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            closeFullscreen();
+        }
+    });
+</script>
+
+<style>
+    /* Custom prose styling for description */
+    .prose {
+        line-height: 1.75;
+        color: #1e293b;
+    }
+    
+    .prose p {
+        margin-bottom: 1.25em;
+    }
+    
+    .prose strong {
+        color: #002147;
+        font-weight: 600;
+    }
+    
+    /* Gallery item hover effect */
+    .gallery-item:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 10px 25px rgba(0, 33, 71, 0.15);
+    }
+    
+    /* Modal transition */
+    #image-modal {
+        transition: opacity 0.3s ease;
+    }
+</style>
