@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Marksheet Dashboard</title>
+    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100">
+    <header class="bg-gradient-to-r from-blue-800 to-blue-600 text-white shadow-lg fixed top-0 left-0 right-0 z-50 header-animation" style="height: 64px; min-height: 64px;">
+        <div class="flex items-center justify-between h-full px-3">
+          <!-- Back button with animation -->
+          <a href="/student/dash/" class="back-button flex items-center justify-center bg-white/10 rounded-full p-1.5 hover:bg-white/20">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+            </svg>
+          </a>
+          
+          <!-- Title - centered -->
+          <h1 class="text-lg font-bold">Diploma Marksheets</h1>
+          
+          <!-- Roll number pill with animation -->
+          <div class=" rounded-full px-3 py-0.5">
+          </div>
+        </div>
+      </header>
+      
+      <!-- Spacer to prevent content from hiding under fixed header -->
+      <div style="height: 64px;"></div>
+    <div class="container mx-auto px-4 py-8">
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <h1 class="text-2xl font-bold mb-6">Marksheet Dashboard</h1>
+            
+            <!-- Upload Form -->
+            <form hx-post="/dmarksheets/" 
+                  hx-encoding="multipart/form-data"
+                  hx-target="#semester-container"
+                  hx-swap="beforeend"
+                  class="mb-8 space-y-4">
+                {% csrf_token %}
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Register Number</label>
+                        <input type="number" name="register_number" required
+                               class="mt-1 block w-full rounded-md border-gray-300 shadow-sm 
+                                      focus:border-indigo-500 focus:ring-indigo-500"
+                               placeholder="Enter register number">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Semester</label>
+                        <select name="semester" required
+                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                            {% with ''|center:10 as range %}
+                            {% for _ in range %}
+                                <option value="{{ forloop.counter }}">Semester {{ forloop.counter }}</option>
+                            {% endfor %}
+                            {% endwith %}
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Marksheet</label>
+                        <input type="file" name="marksheet" required accept="image/*"
+                               class="mt-1 block w-full text-sm text-gray-500
+                                      file:mr-4 file:py-2 file:px-4
+                                      file:rounded-md file:border-0
+                                      file:text-sm file:font-semibold
+                                      file:bg-indigo-50 file:text-indigo-700
+                                      hover:file:bg-indigo-100">
+                    </div>
+                </div>
+                <button type="submit"
+                        class="w-full md:w-auto px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                    Upload Marksheet
+                </button>
+            </form>
+
+            <!-- Marksheets List Grouped by Semester -->
+            <div id="semester-container" class="space-y-6">
+                {% if semester_marksheets %}
+                    {% for semester, marksheets in semester_marksheets.items %}
+                        {% include "diploma/dmarksheet_list.html" %}
+                    {% endfor %}
+                {% else %}
+                    <p class="text-gray-500 text-center py-4">No marksheets found</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</body>
+</html>

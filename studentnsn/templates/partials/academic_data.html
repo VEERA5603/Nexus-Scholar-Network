@@ -1,0 +1,41 @@
+
+
+<!-- templates/partials/academic_data.html -->
+<div>
+    <h2>Academic Performance</h2>
+    
+    <div id="gpaGraph"></div>
+    <script id="cumulative-data" type="application/json">
+        {{ cumulative_data|safe }}
+    </script>
+
+    {% for semester, courses in semester_data.items %}
+    <div class="semester-section">
+        <h3>Semester {{ semester }}</h3>
+        <p>Semester GPA: {{ semester_gpas|get_item:semester }}</p>
+        
+        <table class="grade-table">
+            <thead>
+                <tr>
+                    <th>Course Code</th>
+                    <th>Course Name</th>
+                    <th>Credit Hours</th>
+                    <th>Grade</th>
+                    <th>Grade Points</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for course in courses %}
+                <tr>
+                    <td>{{ course.course_code }}</td>
+                    <td>{{ course.course_name }}</td>
+                    <td>{{ course.credit_hours }}</td>
+                    <td>{{ course.grade }}</td>
+                    <td>{{ course.grade_point }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% endfor %}
+</div>

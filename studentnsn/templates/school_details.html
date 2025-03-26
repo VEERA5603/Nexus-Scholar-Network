@@ -1,0 +1,436 @@
+<!-- school_details.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>School Details</title>
+    <meta name="csrf-token" content="{{ csrf_token }}">
+    <script src="https://unpkg.com/htmx.org@1.9.6"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        // Updated to use session_id instead of JWT
+        document.body.addEventListener('htmx:configRequest', function(evt) {
+            // Session ID is automatically included in cookies
+            // No need to manually add it to headers
+        });
+
+        // Handle successful login redirect
+        document.body.addEventListener('htmx:afterSettle', function(evt) {
+            if (evt.detail.xhr.status === 200 && evt.detail.xhr.getResponseHeader('HX-Redirect')) {
+                window.location.href = evt.detail.xhr.getResponseHeader('HX-Redirect');
+            }
+        });
+
+        // Check session on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            const session_id = document.cookie.split('; ').find(row => row.startsWith('session_id='));
+            if (!session_id) {
+                window.location.href = '/student/login/';
+            }
+        });
+    </script>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <!-- Student Info Header -->
+    <style>
+        .header-animation {
+          transition: all 0.3s ease;
+        }
+        
+        .back-button {
+          transition: transform 0.2s ease;
+        }
+        
+        .back-button:active {
+          transform: scale(0.9);
+        }
+        
+        .pill-badge {
+          animation: fadeIn 0.5s ease-out;
+        }
+        
+        @keyframes fadeIn {
+          from { opacity: 0; transform: translateY(-10px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+      </style>
+      
+      <header class="bg-gradient-to-r from-blue-800 to-blue-600 text-white shadow-lg fixed top-0 left-0 right-0 z-50 header-animation" style="height: 64px; min-height: 64px;">
+        <div class="flex items-center justify-between h-full px-3">
+          <!-- Back button with animation -->
+          <a href="/student/dash/" class="back-button flex items-center justify-center bg-white/10 rounded-full p-1.5 hover:bg-white/20">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+            </svg>
+          </a>
+          
+          <!-- Title - centered -->
+          <h1 class="text-lg font-bold">School Details</h1>
+          
+          <!-- Roll number pill with animation -->
+          <div class="pill-badge bg-white/20 rounded-full px-3 py-0.5">
+            <p class="text-xs font-medium">{{ roll_number }}</p>
+          </div>
+        </div>
+      </header>
+      
+      <!-- Spacer to prevent content from hiding under fixed header -->
+      <div style="height: 64px;"></div>
+
+    <main class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+        <!-- SSLC Section -->
+        <div class="bg-blue-50 shadow rounded-lg mb-8">
+            <div class="px-4 py-5 sm:p-6">
+                <h2 class="text-xl font-semibold text-gray-900 mb-4">SSLC Details</h2>
+                
+                <!-- SSLC Form -->
+                <form hx-post="{% url 'school-details' %}"
+                      hx-trigger="submit"
+                      hx-swap="outerHTML"
+                      class="space-y-6">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="{% if sslc_record %}update{% else %}add{% endif %}">
+                    <input type="hidden" name="record_type" value="sslc">
+
+                    <div class="bg-gradient-to-r from-blue-100 to-blue-300 p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">First Name</label>
+                            <input type="text" name="first_name" required
+                                   value="{{ sslc_record.first_name|default:'' }}"
+                                   class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Last Name</label>
+                            <input type="text" name="last_name" required
+                                   value="{{ sslc_record.last_name|default:'' }}"
+                                   class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">SSLC Register No.</label>
+                            <input type="number" name="sslc_register" required
+                                   value="{{ sslc_record.sslc_register|default:'' }}"
+                                   class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
+                        </div>
+
+                        <div class="md:col-span-2">
+                            <label class="block text-sm font-medium text-gray-700">School Name</label>
+                            <input type="text" name="school_name" required
+                                   value="{{ sslc_record.school_name|default:'' }}"
+                                   class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Board</label>
+                            <input type="text" name="board" required
+                                   value="{{ sslc_record.board|default:'' }}"
+                                   class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
+                        </div>
+
+                        <div class="md:col-span-2">
+                            <label class="block text-sm font-medium text-gray-700">School Address</label>
+                            <textarea name="school_address" required rows="2"
+                                    class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">{{ sslc_record.school_address|default:'' }}</textarea>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Total Marks</label>
+                            <input type="number" step="0.01" name="marks_obtained" required
+                                   value="{{ sslc_record.marks_obtained|default:'' }}"
+                                   class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Percentage</label>
+                            <input type="number" step="0.01" name="sslc_percentage" required
+                                   value="{{ sslc_record.sslc_percentage|default:'' }}"
+                                   class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Passed Year</label>
+                            <input type="number" name="passed_year" required
+                                   value="{{ sslc_record.passed_year|default:'' }}"
+                                   class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">EMIS Number</label>
+                            <input type="number" name="emis_number" required
+                                   value="{{ sslc_record.emis_number|default:'' }}"
+                                   class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
+                        </div>
+                    </div>
+
+                    <!-- SSLC Subject Marks -->
+                    <div class="mt-6">
+                        <h3 class="text-lg font-medium text-gray-900 mb-4">Subject Marks</h3>
+                        <div id="sslc-subjects" class="space-y-3">
+                            {% if sslc_marks %}
+                                {% for mark in sslc_marks %}
+                                    <div class="grid grid-cols-2 gap-4">
+                                        <input type="text" name="subject_name[]" 
+                                               value="{{ mark.subject_name }}"
+                                               class="focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
+                                        <input type="number" name="subject_mark[]" 
+                                               value="{{ mark.subject_mark }}"
+                                               class="focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
+                                    </div>
+                                {% endfor %}
+                            {% else %}
+                                <div class="grid grid-cols-2 gap-4">
+                                    <input type="text" name="subject_name[]" placeholder="Subject Name"
+                                           class="focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
+                                    <input type="number" name="subject_mark[]" placeholder="Mark"
+                                           class="focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
+                                </div>
+                            {% endif %}
+                        </div>
+                        <button type="button" 
+                                onclick="addSubjectField('sslc-subjects')"
+                                class="mt-3 inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700">
+                            Add Subject
+                        </button>
+                    </div>
+
+                    <div class="pt-5">
+                        <button type="submit"
+                                class="w-full inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+                            {% if sslc_record %}Update{% else %}Save{% endif %} SSLC Details
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- HSC Section -->
+        <div class="bg-blue-50 shadow rounded-lg">
+            <div class="px-4 py-5 sm:p-6">
+                <h2 class="text-xl font-semibold text-gray-900 mb-4">HSC Details</h2>
+                
+                <!-- HSC Form -->
+                <form hx-post="{% url 'school-details' %}"
+                      hx-trigger="submit"
+                      hx-swap="outerHTML"
+                      class="space-y-6">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="{% if hsc_record %}update{% else %}add{% endif %}">
+                    <input type="hidden" name="record_type" value="hsc">
+
+                    <div class="bg-gradient-to-r from-blue-100 to-blue-300 p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">First Name</label>
+                            <input type="text" name="first_name" required
+                                   value="{{ hsc_record.first_name|default:'' }}"
+                                   class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Last Name</label>
+                            <input type="text" name="last_name" required
+                                   value="{{ hsc_record.last_name|default:'' }}"
+                                   class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">HSC Register No.</label>
+                            <input type="number" name="hsc_register" required
+                                   value="{{ hsc_record.hsc_register|default:'' }}"
+                                   class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
+                        </div>
+
+                        <div class="md:col-span-2">
+                            <label class="block text-sm font-medium text-gray-700">School Name</label>
+                            <input type="text" name="school_name" required
+                                   value="{{ hsc_record.school_name|default:'' }}"
+                                   class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Board</label>
+                            <input type="text" name="board" required
+                                   value="{{ hsc_record.board|default:'' }}"
+                                   class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
+                        </div>
+
+                        <div class="md:col-span-2">
+                            <label class="block text-sm font-medium text-gray-700">School Address</label>
+                            <textarea name="school_address" required rows="2"
+                                    class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">{{ hsc_record.school_address|default:'' }}</textarea>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Total Marks</label>
+                            <input type="number" step="0.01" name="marks_obtained" required
+                                   value="{{ hsc_record.marks_obtained|default:'' }}"
+                                   class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Percentage</label>
+                            <input type="number" step="0.01" name="hsc_percentage" required
+                                   value="{{ hsc_record.hsc_percentage|default:'' }}"
+                                   class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Passed Year</label>
+                            <input type="number" name="passed_year" required
+                            value="{{ hsc_record.passed_year|default:'' }}"
+                            class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
+                 </div>
+
+                 <div>
+                     <label class="block text-sm font-medium text-gray-700">EMIS Number</label>
+                     <input type="number" name="emis_number" required
+                            value="{{ hsc_record.emis_number|default:'' }}"
+                            class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
+                 </div>
+             </div>
+
+             <!-- HSC Subject Marks -->
+             <div class="mt-6">
+                 <h3 class="text-lg font-medium text-gray-900 mb-4">Subject Marks</h3>
+                 <div id="hsc-subjects" class="space-y-3">
+                     {% if hsc_marks %}
+                         {% for mark in hsc_marks %}
+                             <div class="grid grid-cols-2 gap-4">
+                                 <input type="text" name="subject_name[]" 
+                                        value="{{ mark.subject_name }}"
+                                        class="focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
+                                 <input type="number" name="subject_mark[]" 
+                                        value="{{ mark.subject_mark }}"
+                                        class="focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
+                             </div>
+                         {% endfor %}
+                     {% else %}
+                         <div class="grid grid-cols-2 gap-4">
+                             <input type="text" name="subject_name[]" placeholder="Subject Name"
+                                    class="focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
+                             <input type="number" name="subject_mark[]" placeholder="Mark"
+                                    class="focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
+                         </div>
+                     {% endif %}
+                 </div>
+                 <button type="button" 
+                         onclick="addSubjectField('hsc-subjects')"
+                         class="mt-3 inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700">
+                     Add Subject
+                 </button>
+             </div>
+
+             <div class="pt-5">
+                 <button type="submit"
+                         class="w-full inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+                     {% if hsc_record %}Update{% else %}Save{% endif %} HSC Details
+                 </button>
+             </div>
+         </form>
+     </div>
+ </div>
+
+ <!-- Records Display Section -->
+ <div class="mt-8 space-y-8">
+     <!-- SSLC Records Table -->
+     {% if sslc_record %}
+     <div class="bg-white shadow overflow-hidden sm:rounded-lg">
+         <div class="px-4 py-5 sm:px-6">
+             <h3 class="text-lg leading-6 font-medium text-gray-900">SSLC Records</h3>
+         </div>
+         <div class="border-t border-gray-200">
+             <div class="overflow-x-auto">
+                 <table class="min-w-full divide-y divide-gray-200">
+                     <thead class="bg-gray-50">
+                         <tr>
+                             <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Subject</th>
+                             <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Marks</th>
+                         </tr>
+                     </thead>
+                     <tbody class="bg-white divide-y divide-gray-200">
+                         {% for mark in sslc_marks %}
+                         <tr>
+                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ mark.subject_name }}</td>
+                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ mark.subject_mark }}</td>
+                         </tr>
+                         {% endfor %}
+                     </tbody>
+                 </table>
+             </div>
+         </div>
+     </div>
+     {% endif %}
+
+     <!-- HSC Records Table -->
+     {% if hsc_record %}
+     <div class="bg-white shadow overflow-hidden sm:rounded-lg">
+         <div class="px-4 py-5 sm:px-6">
+             <h3 class="text-lg leading-6 font-medium text-gray-900">HSC Records</h3>
+         </div>
+         <div class="border-t border-gray-200">
+             <div class="overflow-x-auto">
+                 <table class="min-w-full divide-y divide-gray-200">
+                     <thead class="bg-gray-50">
+                         <tr>
+                             <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Subject</th>
+                             <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Marks</th>
+                         </tr>
+                     </thead>
+                     <tbody class="bg-white divide-y divide-gray-200">
+                         {% for mark in hsc_marks %}
+                         <tr>
+                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ mark.subject_name }}</td>
+                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ mark.subject_mark }}</td>
+                         </tr>
+                         {% endfor %}
+                     </tbody>
+                 </table>
+             </div>
+         </div>
+     </div>
+     {% endif %}
+ </div>
+</main>
+
+<!-- HTMX and CSRF Setup -->
+<script>
+ // Handle CSRF token for HTMX requests
+ document.body.addEventListener('htmx:configRequest', (event) => {
+     event.detail.headers['X-CSRFToken'] = document.querySelector('meta[name="csrf-token"]').content;
+ });
+
+ // Add subject field dynamically
+ function addSubjectField(containerId) {
+     const container = document.getElementById(containerId);
+     const newField = document.createElement('div');
+     newField.className = 'grid grid-cols-2 gap-4';
+     newField.innerHTML = `
+         <input type="text" name="subject_name[]" placeholder="Subject Name"
+                class="focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
+         <input type="number" name="subject_mark[]" placeholder="Mark"
+                class="focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
+     `;
+     container.appendChild(newField);
+ }
+
+ // Show success message
+ function showMessage(message, type = 'success') {
+     const alert = document.createElement('div');
+     alert.className = `fixed top-4 right-4 px-4 py-2 rounded-md ${type === 'success' ? 'bg-green-500' : 'bg-red-500'} text-white`;
+     alert.textContent = message;
+     document.body.appendChild(alert);
+     setTimeout(() => alert.remove(), 3000);
+ }
+
+ // Handle form submission responses
+ document.body.addEventListener('htmx:afterSettle', (event) => {
+     if (event.detail.xhr.status === 200) {
+         showMessage(event.detail.xhr.response);
+     } else {
+         showMessage(event.detail.xhr.response || 'An error occurred', 'error');
+     }
+ });
+</script>
+</body>
+</html>

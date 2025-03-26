@@ -1,0 +1,687 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Personal Information</title>
+    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+    <script src="https://unpkg.com/htmx.org/dist/ext/response-targets.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        document.body.addEventListener('htmx:configRequest', function(evt) {
+            // Session ID is automatically included in cookies
+        });
+
+        document.body.addEventListener('htmx:afterSettle', function(evt) {
+            if (evt.detail.xhr.status === 200 && evt.detail.xhr.getResponseHeader('HX-Redirect')) {
+                window.location.href = evt.detail.xhr.getResponseHeader('HX-Redirect');
+            }
+        });
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const session_id = document.cookie.split('; ').find(row => row.startsWith('session_id='));
+            if (!session_id) {
+                window.location.href = '/student/login/';
+            }
+        });
+
+        // Add theme colors
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            50: '#f0f9ff',
+                            100: '#e0f2fe',
+                            200: '#bae6fd',
+                            300: '#7dd3fc',
+                            400: '#38bdf8',
+                            500: '#0ea5e9',
+                            600: '#0284c7',
+                            700: '#0369a1',
+                            800: '#075985',
+                            900: '#0c4a6e',
+                        }
+                    },
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-blue-50 text-gray-800">
+    <!-- CSRF Token for HTMX -->
+    <script>
+        document.body.addEventListener('htmx:configRequest', function(event) {
+            event.detail.headers['X-CSRFToken'] = '{{ csrf_token }}';
+        });
+    </script>
+
+<style>
+    .header-animation {
+      transition: all 0.3s ease;
+    }
+    
+    .back-button {
+      transition: transform 0.2s ease;
+    }
+    
+    .back-button:active {
+      transform: scale(0.9);
+    }
+    
+    .pill-badge {
+      animation: fadeIn 0.5s ease-out;
+    }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+  
+  <header class="bg-gradient-to-r from-blue-800 to-blue-600 text-white shadow-lg fixed top-0 left-0 right-0 z-50 header-animation" style="height: 64px; min-height: 64px;">
+    <div class="flex items-center justify-between h-full px-3">
+      <!-- Back button with animation -->
+      <a href="/student/dash/" class="back-button flex items-center justify-center bg-white/10 rounded-full p-1.5 hover:bg-white/20">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+        </svg>
+      </a>
+      
+      <!-- Title - centered -->
+      <h1 class="text-lg font-bold">Personal Information</h1>
+      
+      <!-- Roll number pill with animation -->
+      <div class="pill-badge bg-white/20 rounded-full px-3 py-0.5">
+        <p class="text-xs font-medium">{{ roll_number }}</p>
+      </div>
+    </div>
+  </header>
+  
+  <!-- Spacer to prevent content from hiding under fixed header -->
+  <div style="height: 64px;"></div>
+    
+    <!-- Main container -->
+    <div class="max-w-5xl mx-auto px-4 py-6">
+        <!-- Form -->
+        <form id="personalInfoForm" 
+              hx-post="/personal-information/"  
+              hx-target="#formMessages"
+              hx-swap="innerHTML"
+              class="space-y-10">
+         
+            {% csrf_token %}
+                
+            <!-- Student Basic Info Section -->
+            <div class="bg-gradient-to-r from-cyan-100 to-cyan-300 p-6 rounded-lg shadow-xl border border-blue-400 col-span-full">
+                <h2 class="text-xl font-semibold text-primary-800 section-heading mb-6">Basic Information</h2>
+                
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <!-- Roll Number -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Roll Number</label>
+                        <input type="number" 
+                               name="roll_number" 
+                               value="{{ personal_info.roll_number|default:roll_number }}" 
+                               readonly
+                               class="block w-full rounded-md border-gray-300 bg-gray-50 px-4 py-2 text-gray-500 shadow-sm">
+                    </div>
+
+                    <!-- Previous Roll Number -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Previous Roll Number</label>
+                        <input type="number" 
+                               name="previous_roll_number" 
+                               value="{{ personal_info.previous_roll_number|default:'' }}"
+                               class="block w-full rounded-md border-gray-300 px-4 py-2 shadow-sm focus:ring-primary-500 focus:border-primary-500">
+                    </div>
+
+                    <!-- Student Type -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Type of Student</label>
+                        <select name="type_of_student"
+                                class="block w-full rounded-md border-gray-300 px-4 py-2 shadow-sm focus:ring-primary-500 focus:border-primary-500">
+                            <option value="0" {% if personal_info.type_of_student == 0 %}selected{% endif %}>Regular</option>
+                            <option value="1" {% if personal_info.type_of_student == 1 %}selected{% endif %}>Lateral Entry</option>
+                            <option value="2" {% if personal_info.type_of_student == 2 %}selected{% endif %}>Rejoin</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Personal Details Section -->
+            <div class="bg-gradient-to-r from-cyan-100 to-cyan-300 p-6 rounded-lg shadow-xl border border-blue-400 col-span-full">
+                <h2 class="text-xl font-semibold text-primary-800 section-heading mb-6">Personal Details</h2>
+                
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <!-- Name Fields -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">First Name<span class="text-red-500">*</span></label>
+                        <input type="text" 
+                               name="first_name" 
+                               required
+                               value="{{ personal_info.first_name|default:'' }}"
+                               class="block w-full rounded-md border-gray-300 px-4 py-2 shadow-sm focus:ring-primary-500 focus:border-primary-500">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Last Name<span class="text-red-500">*</span></label>
+                        <input type="text" 
+                               id="date" 
+                               name="last_name" 
+                               required
+                               value="{{ personal_info.last_name|default:'' }}"
+                               class="block w-full rounded-md border-gray-300 px-4 py-2 shadow-sm focus:ring-primary-500 focus:border-primary-500">
+                    </div>
+
+                    <!-- DOB -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Date of Birth<span class="text-red-500">*</span></label>
+                        <input type="date" 
+                               name="dob" 
+                               required
+                               value="{{ personal_info.dob|date:'Y-m-d'|default:'' }}"
+                               class="block w-full rounded-md border-gray-300 px-4 py-2 shadow-sm focus:ring-primary-500 focus:border-primary-500">
+                    </div>
+
+                    <!-- Gender -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Gender<span class="text-red-500">*</span></label>
+                        <select name="gender"
+                                required
+                                class="block w-full rounded-md border-gray-300 px-4 py-2 shadow-sm focus:ring-primary-500 focus:border-primary-500">
+                            <option value="Male" {% if personal_info.gender == 'Male' %}selected{% endif %}>Male</option>
+                            <option value="Female" {% if personal_info.gender == 'Female' %}selected{% endif %}>Female</option>
+                            <option value="Other" {% if personal_info.gender == 'Other' %}selected{% endif %}>Other</option>
+                        </select>
+                    </div>
+
+                    <!-- Contact Details -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Mobile Number<span class="text-red-500">*</span></label>
+                        <input type="tel" 
+                               name="student_mobile" 
+                               required
+                               value="{{ personal_info.student_mobile|default:'' }}"
+                               class="block w-full rounded-md border-gray-300 px-4 py-2 shadow-sm focus:ring-primary-500 focus:border-primary-500">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Email<span class="text-red-500">*</span></label>
+                        <input type="email" 
+                               name="email" 
+                               required
+                               value="{{ personal_info.email|default:'' }}"
+                               class="block w-full rounded-md border-gray-300 px-4 py-2 shadow-sm focus:ring-primary-500 focus:border-primary-500">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Permanent Address Section -->
+            <div class="bg-gradient-to-r from-cyan-100 to-cyan-300 p-6 rounded-lg shadow-xl border border-blue-400 col-span-full">
+                <h2 class="text-xl font-semibold text-primary-800 section-heading mb-6">Permanent Address</h2>
+                
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <!-- Area Type -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Area Type<span class="text-red-500">*</span></label>
+                        <select name="permanent_area_type"
+                                required
+                                class="block w-full rounded-md border-gray-300 px-4 py-2 shadow-sm focus:ring-primary-500 focus:border-primary-500">
+                            <option value="Urban" {% if personal_info.permanent_address.area_type == 'Urban' %}selected{% endif %}>Urban</option>
+                            <option value="Rural" {% if personal_info.permanent_address.area_type == 'Rural' %}selected{% endif %}>Rural</option>
+                        </select>
+                    </div>
+
+                    <!-- Door Number -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Door Number<span class="text-red-500">*</span></label>
+                        <input type="text" 
+                               name="permanent_door_number" 
+                               required
+                               value="{{ personal_info.permanent_address.door_number|default:'' }}"
+                               class="block w-full rounded-md border-gray-300 px-4 py-2 shadow-sm focus:ring-primary-500 focus:border-primary-500">
+                    </div>
+
+                    <!-- Street Name -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Street Name<span class="text-red-500">*</span></label>
+                        <input type="text" 
+                               name="permanent_street_name" 
+                               required
+                               value="{{ personal_info.permanent_address.street_name|default:'' }}"
+                               class="block w-full rounded-md border-gray-300 px-4 py-2 shadow-sm focus:ring-primary-500 focus:border-primary-500">
+                    </div>
+
+                    <!-- Other Address Fields -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">District<span class="text-red-500">*</span></label>
+                        <input type="text" 
+                               name="permanent_district" 
+                               required
+                               value="{{ personal_info.permanent_address.district|default:'' }}"
+                               class="block w-full rounded-md border-gray-300 px-4 py-2 shadow-sm focus:ring-primary-500 focus:border-primary-500">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">State<span class="text-red-500">*</span></label>
+                        <input type="text" 
+                               name="permanent_state" 
+                               required
+                               value="{{ personal_info.permanent_address.state|default:'' }}"
+                               class="block w-full rounded-md border-gray-300 px-4 py-2 shadow-sm focus:ring-primary-500 focus:border-primary-500">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Pincode<span class="text-red-500">*</span></label>
+                        <input type="number" 
+                               name="permanent_pincode" 
+                               required
+                               value="{{ personal_info.permanent_address.pincode|default:'' }}"
+                               class="block w-full rounded-md border-gray-300 px-4 py-2 shadow-sm focus:ring-primary-500 focus:border-primary-500">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Communication Address Section -->
+            <div class="bg-gradient-to-r from-cyan-100 to-cyan-300 p-6 rounded-lg shadow-xl border border-blue-400 col-span-full">
+                <div class="flex items-center justify-between mb-6">
+                    <h2 class="text-xl font-semibold text-primary-800 section-heading">Communication Address</h2>
+                    <div class="flex items-center">
+                        <input type="checkbox" 
+                               id="sameAsPermanent"
+                               name="same_as_permanent"
+                               class="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded">
+                        <label for="sameAsPermanent" class="ml-2 block text-sm text-gray-700">
+                            Same as Permanent Address
+                        </label>
+                    </div>
+                </div>
+                
+                <div id="communicationAddress" class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <!-- Area Type -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Area Type<span class="text-red-500">*</span></label>
+                        <select name="communication_area_type"
+                                required
+                                class="block w-full rounded-md border-gray-300 px-4 py-2 shadow-sm focus:ring-primary-500 focus:border-primary-500">
+                            <option value="Urban" {% if personal_info.communication_address.area_type == 'Urban' %}selected{% endif %}>Urban</option>
+                            <option value="Rural" {% if personal_info.communication_address.area_type == 'Rural' %}selected{% endif %}>Rural</option>
+                        </select>
+                    </div>
+
+                    <!-- Door Number -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Door Number<span class="text-red-500">*</span></label>
+                        <input type="text" 
+                               name="communication_door_number" 
+                               required
+                               value="{{ personal_info.communication_address.door_number|default:'' }}"
+                               class="block w-full rounded-md border-gray-300 px-4 py-2 shadow-sm focus:ring-primary-500 focus:border-primary-500">
+                    </div>
+
+                    <!-- Street Name -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Street Name<span class="text-red-500">*</span></label>
+                        <input type="text" 
+                               name="communication_street_name" 
+                               required
+                               value="{{ personal_info.communication_address.street_name|default:'' }}"
+                               class="block w-full rounded-md border-gray-300 px-4 py-2 shadow-sm focus:ring-primary-500 focus:border-primary-500">
+                    </div>
+
+                    <!-- Other Address Fields -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">District<span class="text-red-500">*</span></label>
+                        <input type="text" 
+                               name="communication_district" 
+                               required
+                               value="{{ personal_info.communication_address.district|default:'' }}"
+                               class="block w-full rounded-md border-gray-300 px-4 py-2 shadow-sm focus:ring-primary-500 focus:border-primary-500">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">State<span class="text-red-500">*</span></label>
+                        <input type="text" 
+                               name="communication_state" 
+                               required
+                               value="{{ personal_info.communication_address.state|default:'' }}"
+                               class="block w-full rounded-md border-gray-300 px-4 py-2 shadow-sm focus:ring-primary-500 focus:border-primary-500">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Pincode<span class="text-red-500">*</span></label>
+                        <input type="number" 
+                               name="communication_pincode" 
+                               required
+                               value="{{ personal_info.communication_address.pincode|default:'' }}"
+                               class="block w-full rounded-md border-gray-300 px-4 py-2 shadow-sm focus:ring-primary-500 focus:border-primary-500">
+                    </div>
+                </div>
+            </div>
+        
+            <!-- Parent Information Section -->
+            <div class="bg-gradient-to-r from-cyan-100 to-cyan-300 p-6 rounded-lg shadow-xl border border-blue-400 col-span-full">
+                <h2 class="text-xl font-semibold text-primary-800 section-heading mb-6">Parent Information</h2>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <!-- Father's Details -->
+                    <div class="space-y-4 bg-gray-50 p-4 rounded-lg">
+                        <h3 class="text-base font-medium text-primary-700">Father's Details</h3>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Father's Name<span class="text-red-500">*</span></label>
+                            <input type="text" 
+                                   name="father_name" 
+                                   required
+                                   value="{{ personal_info.father_name|default:'' }}"
+                                   class="block w-full rounded-md border-gray-300 px-4 py-2 shadow-sm focus:ring-primary-500 focus:border-primary-500">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Father's Occupation<span class="text-red-500">*</span></label>
+                            <input type="text" 
+                                   name="father_occupation" 
+                                   required
+                                   value="{{ personal_info.father_occupation|default:'' }}"
+                                   class="block w-full rounded-md border-gray-300 px-4 py-2 shadow-sm focus:ring-primary-500 focus:border-primary-500">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Father's Mobile<span class="text-red-500">*</span></label>
+                            <input type="tel" 
+                                   name="father_mobile" 
+                                   required
+                                   value="{{ personal_info.father_mobile|default:'' }}"
+                                   class="block w-full rounded-md border-gray-300 px-4 py-2 shadow-sm focus:ring-primary-500 focus:border-primary-500">
+                        </div>
+                    </div>
+        
+                    <!-- Mother's Details -->
+                    <div class="space-y-4 bg-gray-50 p-4 rounded-lg">
+                        <h3 class="text-base font-medium text-primary-700">Mother's Details</h3>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Mother's Name<span class="text-red-500">*</span></label>
+                            <input type="text" 
+                                   name="mother_name" 
+                                   required
+                                   value="{{ personal_info.mother_name|default:'' }}"
+                                   class="block w-full rounded-md border-gray-300 px-4 py-2 shadow-sm focus:ring-primary-500 focus:border-primary-500">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Mother's Occupation<span class="text-red-500">*</span></label>
+                            <input type="text" 
+                                   name="mother_occupation" 
+                                   required
+                                   value="{{ personal_info.mother_occupation|default:'' }}"
+                                   class="block w-full rounded-md border-gray-300 px-4 py-2 shadow-sm focus:ring-primary-500 focus:border-primary-500">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Mother's Mobile<span class="text-red-500">*</span></label>
+                            <input type="tel" 
+                                   name="mother_mobile" 
+                                   required
+                                   value="{{ personal_info.mother_mobile|default:'' }}"
+                                   class="block w-full rounded-md border-gray-300 px-4 py-2 shadow-sm focus:ring-primary-500 focus:border-primary-500">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        
+            <!-- Other Details Section -->
+            <div class="bg-gradient-to-r from-cyan-100 to-cyan-300 p-6 rounded-lg shadow-xl border border-blue-400 col-span-full">
+                <h2 class="text-xl font-semibold text-primary-800 section-heading mb-6">Other Details</h2>
+                
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                    <!-- Physical Details -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Height (cm)<span class="text-red-500">*</span></label>
+                        <input type="number" 
+                               name="height" 
+                               required
+                               step="0.1"
+                               value="{{ personal_info.height|default:'' }}"
+                               class="block w-full rounded-md border-gray-300 px-4 py-2 shadow-sm focus:ring-primary-500 focus:border-primary-500">
+                    </div>
+        
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Weight (kg)<span class="text-red-500">*</span></label>
+                        <input type="number" 
+                               name="weight" 
+                               required
+                               step="0.1"
+                               value="{{ personal_info.weight|default:'' }}"
+                               class="block w-full rounded-md border-gray-300 px-4 py-2 shadow-sm focus:ring-primary-500 focus:border-primary-500">
+                    </div>
+        
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Blood Group<span class="text-red-500">*</span></label>
+                        <input type="text" 
+                               name="blood_group" 
+                               required
+                               value="{{ personal_info.blood_group|default:'' }}"
+                               class="block w-full rounded-md border-gray-300 px-4 py-2 shadow-sm focus:ring-primary-500 focus:border-primary-500">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                    <!-- Identity Details -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Aadhar Number<span class="text-red-500">*</span></label>
+                        <input type="number" 
+                               name="aadhar_number" 
+                               required
+                               value="{{ personal_info.aadhar_number|default:'' }}"
+                               class="block w-full rounded-md border-gray-300 px-4 py-2 shadow-sm focus:ring-primary-500 focus:border-primary-500">
+                    </div>
+        
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Annual Income<span class="text-red-500">*</span></label>
+                        <input type="number" 
+                               name="annual_income" 
+                               required
+                               step="0.01"
+                               value="{{ personal_info.annual_income|default:'' }}"
+                               class="block w-full rounded-md border-gray-300 px-4 py-2 shadow-sm focus:ring-primary-500 focus:border-primary-500">
+                    </div>
+        
+                    <!-- Other Fields -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Religion<span class="text-red-500">*</span></label>
+                        <input type="text" 
+                               name="religion" 
+                               required
+                               value="{{ personal_info.religion|default:'' }}"
+                               class="block w-full rounded-md border-gray-300 px-4 py-2 shadow-sm focus:ring-primary-500 focus:border-primary-500">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Community<span class="text-red-500">*</span></label>
+                        <input type="text" 
+                               name="community" 
+                               required
+                               value="{{ personal_info.community|default:'' }}"
+                               class="block w-full rounded-md border-gray-300 px-4 py-2 shadow-sm focus:ring-primary-500 focus:border-primary-500">
+                    </div>
+        
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Caste<span class="text-red-500">*</span></label>
+                        <input type="text" 
+                               name="caste" 
+                               required
+                               value="{{ personal_info.caste|default:'' }}"
+                               class="block w-full rounded-md border-gray-300 px-4 py-2 shadow-sm focus:ring-primary-500 focus:border-primary-500">
+                    </div>
+        
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Nationality<span class="text-red-500">*</span></label>
+                        <input type="text" 
+                               name="nationality" 
+                               required
+                               value="{{ personal_info.nationality|default:'' }}"
+                               class="block w-full rounded-md border-gray-300 px-4 py-2 shadow-sm focus:ring-primary-500 focus:border-primary-500">
+                    </div>
+                </div>
+        
+                <!-- Special Considerations Section Continuation -->
+<div class="bg-gray-50 p-5 rounded-lg mt-6">
+    <h3 class="text-base font-medium text-primary-700 mb-4">Special Considerations</h3>
+    
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-4">
+        <!-- Differently Abled Selection -->
+        <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Differently Abled</label>
+            <div class="flex items-center space-x-6 mt-1">
+                <div class="flex items-center">
+                    <input type="radio" 
+                           id="differently_abled_yes" 
+                           name="differentially_abled" 
+                           value="true"
+                           {% if personal_info.differentially_abled %}checked{% endif %}
+                           class="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300">
+                    <label for="differently_abled_yes" class="ml-2 block text-sm text-gray-700">Yes</label>
+                </div>
+                <div class="flex items-center">
+                    <input type="radio" 
+                           id="differently_abled_no" 
+                           name="differentially_abled" 
+                           value="false"
+                           {% if not personal_info.differentially_abled %}checked{% endif %}
+                           class="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300">
+                    <label for="differently_abled_no" class="ml-2 block text-sm text-gray-700">No</label>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Type of Disability -->
+        <div id="disability_type_container" class="{% if not personal_info.differentially_abled %}hidden{% endif %}">
+            <label class="block text-sm font-medium text-gray-700 mb-1">Type of Disability</label>
+            <input type="text" 
+                   name="Type_of_disability" 
+                   value="{{ personal_info.Type_of_disability|default:'' }}"
+                   class="block w-full rounded-md border-gray-300 px-4 py-2 shadow-sm focus:ring-primary-500 focus:border-primary-500">
+        </div>
+    </div>
+    
+    <!-- Special Quota -->
+    <div class="mb-4">
+        <label class="block text-sm font-medium text-gray-700 mb-1">Special Quota</label>
+        <select name="special_quota"
+                class="block w-full md:w-1/2 rounded-md border-gray-300 px-4 py-2 shadow-sm focus:ring-primary-500 focus:border-primary-500">
+            <option value="0" {% if personal_info.special_quota == '0' %}selected{% endif %}>None</option>
+            <option value="1" {% if personal_info.special_quota == '1' %}selected{% endif %}>Special Quota</option>
+        </select>
+    </div>
+</div>
+
+<!-- Form Messages -->
+<div id="formMessages" class="mt-6 text-lg font-semibold text-purple-700"></div>
+
+
+<!-- Submit Buttons - Fixed positioning to ensure visibility -->
+<div class="mt-10 flex justify-end items-center sticky bottom-0 bg-white p-4 shadow-md rounded-lg">
+    
+    <button type="submit" 
+    id="saveButton"
+    class="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+Save Information
+<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 ml-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+</svg>
+</button>
+
+</div>
+
+</form>
+
+<!-- Extra padding at bottom to prevent button from covering content -->
+<div class="pb-20"></div>
+
+<!-- Page End -->
+</div>
+
+<script>
+    // Toggle disability type field visibility
+    document.addEventListener('DOMContentLoaded', function() {
+        const disabilityYes = document.getElementById('differently_abled_yes');
+        const disabilityNo = document.getElementById('differently_abled_no');
+        const disabilityTypeContainer = document.getElementById('disability_type_container');
+        
+        function toggleDisabilityType() {
+            if (disabilityYes.checked) {
+                disabilityTypeContainer.classList.remove('hidden');
+            } else {
+                disabilityTypeContainer.classList.add('hidden');
+            }
+        }
+        
+        disabilityYes.addEventListener('change', toggleDisabilityType);
+        disabilityNo.addEventListener('change', toggleDisabilityType);
+        
+        // Same address functionality
+        const sameAddressCheckbox = document.getElementById('sameAsPermanent');
+        const communicationAddressFields = document.getElementById('communicationAddress');
+        
+       // Modify the same address functionality
+sameAddressCheckbox.addEventListener('change', function() {
+    if (this.checked) {
+        // Copy permanent address fields to communication address fields
+        const permanentFields = [
+            { src: 'permanent_area_type', dest: 'communication_area_type' },
+            { src: 'permanent_door_number', dest: 'communication_door_number' },
+            { src: 'permanent_street_name', dest: 'communication_street_name' },
+            { src: 'permanent_district', dest: 'communication_district' },
+            { src: 'permanent_state', dest: 'communication_state' },
+            { src: 'permanent_pincode', dest: 'communication_pincode' }
+        ];
+        
+        permanentFields.forEach(field => {
+            const srcElement = document.getElementsByName(field.src)[0];
+            const destElement = document.getElementsByName(field.dest)[0];
+            
+            if (srcElement && destElement) {
+                if (srcElement.tagName === 'SELECT') {
+                    destElement.value = srcElement.value;
+                } else {
+                    destElement.value = srcElement.value;
+                }
+            }
+        });
+        
+        // Make communication address fields read-only instead of disabled
+        communicationAddressFields.querySelectorAll('input, select').forEach(input => {
+            input.setAttribute('readonly', 'readonly');
+            // For select elements, we need a different approach since readonly doesn't work
+            if (input.tagName === 'SELECT') {
+                input.style.pointerEvents = 'none';
+                input.style.backgroundColor = '#f3f4f6';
+            } else {
+                input.style.backgroundColor = '#f3f4f6';
+            }
+        });
+        
+        communicationAddressFields.classList.add('opacity-75');
+    } else {
+        // Enable communication address fields
+        communicationAddressFields.querySelectorAll('input, select').forEach(input => {
+            input.removeAttribute('readonly');
+            if (input.tagName === 'SELECT') {
+                input.style.pointerEvents = 'auto';
+                input.style.backgroundColor = '';
+            } else {
+                input.style.backgroundColor = '';
+            }
+        });
+        
+        communicationAddressFields.classList.remove('opacity-75');
+    }
+});
+
+        // Ensure submit button is visible by scrolling to it when form is too long
+        document.getElementById('saveButton').scrollIntoView({
+            behavior: 'smooth',
+            block: 'end'
+        });
+    });
+</script>
+</body>
+</html>

@@ -1,0 +1,9 @@
+<!-- marksheet_list.html -->
+<div id="semester-{{ semester }}" class="bg-gray-50 rounded-lg p-4">
+    <h2 class="text-xl font-semibold mb-4">Semester {{ semester }}</h2>
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {% for marksheet in marksheets %}
+            {% include "diploma/dmarksheet_card.html" %}
+        {% endfor %}
+    </div>
+</div>

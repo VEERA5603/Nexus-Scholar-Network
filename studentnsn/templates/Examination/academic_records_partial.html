@@ -1,0 +1,36 @@
+<!-- templates/examination/academic_records_partial.html -->
+<section id="academic-records" class="bg-white p-6 rounded-lg shadow-lg mt-8">
+    <h2 class="text-2xl font-semibold mb-6">Academic Records</h2>
+    {% for semester, data in semesters.items %}
+    <div class="mb-8">
+        <h3 class="text-xl font-semibold">Semester {{ semester }}</h3>
+        <p><strong>GPA:</strong> {{ data.gpa }}</p>
+        <div class="overflow-x-auto mt-4">
+            <table class="min-w-full border-collapse border border-gray-300">
+                <thead>
+                    <tr class="bg-gray-100">
+                        <th class="border border-gray-300 px-4 py-2 text-sm text-left">Course Code</th>
+                        <th class="border border-gray-300 px-4 py-2 text-sm text-left">Course Name</th>
+                        <th class="border border-gray-300 px-4 py-2 text-sm text-left">Internal Mark</th>
+                        <th class="border border-gray-300 px-4 py-2 text-sm text-left">Grade</th>
+                        <th class="border border-gray-300 px-4 py-2 text-sm text-left">Credit Hours</th>
+                        <th class="border border-gray-300 px-4 py-2 text-sm text-left">Exam Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for grade in data.grades %}
+                    <tr>
+                        <td class="border border-gray-300 px-4 py-2 text-sm">{{ grade.course_code }}</td>
+                        <td class="border border-gray-300 px-4 py-2 text-sm">{{ grade.course_name }}</td>
+                        <td class="border border-gray-300 px-4 py-2 text-sm">{{ grade.internal_mark }}</td>
+                        <td class="border border-gray-300 px-4 py-2 text-sm">{{ grade.grade }}</td>
+                        <td class="border border-gray-300 px-4 py-2 text-sm">{{ grade.credit_hours }}</td>
+                        <td class="border border-gray-300 px-4 py-2 text-sm">{{ grade.exam_held_on|date:"d-m-Y" }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% endfor %}
+</section>

@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bank Details</title>
+    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        // Session management script
+        document.body.addEventListener('htmx:configRequest', function(evt) { /* Config logic */ });
+        document.body.addEventListener('htmx:afterSettle', function(evt) { /* Redirect logic */ });
+        document.addEventListener('DOMContentLoaded', function() {
+            if (!document.cookie.split('; ').find(row => row.startsWith('session_id='))) {
+                window.location.href = '/student/login/';
+            }
+        });
+    </script>
+</head>
+<body class="bg-gray-50">
+    <style>
+        .header-animation {
+          transition: all 0.3s ease;
+        }
+        
+        .back-button {
+          transition: transform 0.2s ease;
+        }
+        
+        .back-button:active {
+          transform: scale(0.9);
+        }
+        
+        .pill-badge {
+          animation: fadeIn 0.5s ease-out;
+        }
+        
+        @keyframes fadeIn {
+          from { opacity: 0; transform: translateY(-10px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+      </style>
+      
+      <header class="bg-gradient-to-r from-blue-800 to-blue-600 text-white shadow-lg fixed top-0 left-0 right-0 z-50 header-animation" style="height: 64px; min-height: 64px;">
+        <div class="flex items-center justify-between h-full px-3">
+          <!-- Back button with animation -->
+          <a href="/student/dash/" class="back-button flex items-center justify-center bg-white/10 rounded-full p-1.5 hover:bg-white/20">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+            </svg>
+          </a>
+          
+          <!-- Title - centered -->
+          <h1 class="text-lg font-bold">Rejoin Details</h1>
+          
+          <!-- Roll number pill with animation -->
+          <div class="pill-badge bg-white/20 rounded-full px-3 py-0.5">
+            <p class="text-xs font-medium">{{ roll_number }}</p>
+          </div>
+        </div>
+      </header>
+      
+      <!-- Spacer to prevent content from hiding under fixed header -->
+      <div style="height: 64px;"></div>
+    <div class="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+        <div class="bg-blue-50 rounded-lg shadow-md overflow-hidden">
+            <div class="px-4 py-5 sm:p-6">
+                <h2 class="text-xl font-semibold text-gray-800 mb-6">Rejoin Student Details</h2>
+                <p class="text-sm text-gray-600 mb-6">Roll Number: {{ roll_number }}</p>
+                
+                <div id="form-container">
+                    {% include 'Student Details/rejoin/r_form.html' %}
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

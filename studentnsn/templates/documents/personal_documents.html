@@ -1,0 +1,57 @@
+
+<!-- personal_documents.html -->
+ {% load document_tags %}
+<!-- personal_documents.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Personal Documents</title>
+    <script src="https://unpkg.com/htmx.org@1.9.6"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        // Ensure CSRF token is included in HTMX requests
+        document.body.addEventListener('htmx:configRequest', function(evt) {
+            const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]')?.value;
+            if (csrfToken) {
+                evt.detail.headers['X-CSRFToken'] = csrfToken;
+            }
+        });
+
+        // Handle successful login redirect (as per your current setup)
+        document.body.addEventListener('htmx:afterSettle', function(evt) {
+            if (evt.detail.xhr.status === 200 && evt.detail.xhr.getResponseHeader('HX-Redirect')) {
+                window.location.href = evt.detail.xhr.getResponseHeader('HX-Redirect');
+            }
+        });
+
+        // Check session on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            const session_id = document.cookie.split('; ').find(row => row.startsWith('session_id='));
+            if (!session_id) {
+                window.location.href = '/student/login/';
+            }
+        });
+    </script>
+    <style>
+        .htmx-indicator{
+            opacity:0;
+            transition: opacity 500ms ease-in;
+        }
+        .htmx-request .htmx-indicator{
+            opacity:1
+        }
+        .htmx-request.htmx-indicator{
+            opacity:1
+        }
+    </style>
+</head>
+<body class="bg-blue-50 min-h-screen">
+    <div class="container mx-auto px-4 py-8">
+        <div id="content">
+            {% include 'documents/personal_documents_partial.html' %}
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,157 @@
+<!-- templates/examination/examination.html -->
+{% extends 'examination/base.html' %}
+
+{% block content %}
+<!-- Header Section -->
+<style>
+    .header-animation {
+      transition: all 0.3s ease;
+    }
+    
+    .back-button {
+      transition: transform 0.2s ease;
+    }
+    
+    .back-button:active {
+      transform: scale(0.9);
+    }
+    
+    .pill-badge {
+      animation: fadeIn 0.5s ease-out;
+    }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+  
+  <header class="bg-gradient-to-r from-blue-800 to-blue-600 text-white shadow-lg fixed top-0 left-0 right-0 z-50 header-animation" style="height: 64px; min-height: 64px;">
+    <div class="flex items-center justify-between h-full px-3">
+      <!-- Back button with animation -->
+      <a href="/student/dash/" class="back-button flex items-center justify-center bg-white/10 rounded-full p-1.5 hover:bg-white/20">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+        </svg>
+      </a>
+      
+      <!-- Title - centered -->
+      <h1 class="text-lg font-bold">Examination</h1>
+      
+      <!-- Roll number pill with animation -->
+      <div class="pill-badge bg-white/20 rounded-full px-3 py-0.5">
+        <p class="text-xs font-medium">{{ roll_number }}</p>
+      </div>
+    </div>
+  </header>
+  
+  <!-- Spacer to prevent content from hiding under fixed header -->
+  <div style="height: 64px;"></div>
+<!-- Main Content Section -->
+<main class="container mx-auto px-4 py-8">
+    <!-- Student Info and Add Record Section -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <!-- Student Info Card -->
+        <section class="bg-white p-6 rounded-lg shadow-lg">
+            <h2 class="text-xl font-semibold mb-4">Student Information</h2>
+            <p><strong>Roll Number:</strong> {{ roll_number }}</p>
+            <p><strong>Register Number:</strong> {{ register_number }}</p>
+            <p><strong>CGPA:</strong> {{ cgpa }}</p>
+        </section>
+
+        <!-- Add Academic Record Form -->
+        <section class="bg-white p-6 rounded-lg shadow-lg">
+            <h2 class="text-xl font-semibold mb-4">Add Academic Record</h2>
+            <form hx-post="{% url 'examination' %}" 
+                  hx-trigger="submit" 
+                  hx-target="#academic-records" 
+                  hx-swap="innerHTML" 
+                  class="space-y-6">
+                
+                <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <!-- Change this part in the form -->
+<div class="mb-4">
+    <label for="register_number" class="block text-sm font-medium text-gray-700">Register Number</label>
+    <input type="text" 
+           id="register_number" 
+           name="register_number" 
+           value="{{ register_number }}"
+           class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+           required>
+</div>
+                    <div class="mb-4">
+                        <label for="roll_number" class="block text-sm font-medium text-gray-700">Roll Number</label>
+                        <input type="text" id="roll_number" name="roll_number" value="{{ roll_number }}" readonly class="mt-1 block w-full border-gray-300 rounded-md shadow-sm bg-gray-100">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div class="mb-4">
+                        <label for="semester" class="block text-sm font-medium text-gray-700">Semester</label>
+                        <select id="semester" name="semester" required class="mt-1 block w-full border-gray-300 rounded-md shadow-sm">
+                            {% for i in "123456789"|make_list %}
+                            <option value="{{ i }}">{{ i }}</option>
+                            {% endfor %}
+                            <option value="10">10</option>
+                        </select>
+                    </div>
+                    <div class="mb-4">
+                        <label for="course_code" class="block text-sm font-medium text-gray-700">Course Code</label>
+                        <input type="text" id="course_code" name="course_code" required class="mt-1 block w-full border-gray-300 rounded-md shadow-sm">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div class="mb-4">
+                        <label for="course_name" class="block text-sm font-medium text-gray-700">Course Name</label>
+                        <input type="text" id="course_name" name="course_name" required class="mt-1 block w-full border-gray-300 rounded-md shadow-sm">
+                    </div>
+                    <div class="mb-4">
+                        <label for="internal_mark" class="block text-sm font-medium text-gray-700">Internal Mark</label>
+                        <input type="number" id="internal_mark" name="internal_mark" required class="mt-1 block w-full border-gray-300 rounded-md shadow-sm" min="0" max="100">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div class="mb-4">
+                        <label for="grade" class="block text-sm font-medium text-gray-700">Grade</label>
+                        <select id="grade" name="grade" required class="mt-1 block w-full border-gray-300 rounded-md shadow-sm">
+                            <option value="S">S</option>
+                            <option value="A">A</option>
+                            <option value="B">B</option>
+                            <option value="C">C</option>
+                            <option value="D">D</option>
+                            <option value="E">E</option>
+                            <option value="RA">F</option>
+                            <option value="AB">Absent</option>
+                        </select>
+                    </div>
+                    <div class="mb-4">
+                        <label for="credit_hours" class="block text-sm font-medium text-gray-700">Credit Hours</label>
+                        <input type="number" id="credit_hours" name="credit_hours" required class="mt-1 block w-full border-gray-300 rounded-md shadow-sm" step="0.5" min="0">
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <label for="exam_held_on" class="block text-sm font-medium text-gray-700">Exam Held on</label>
+                    <input type="date" id="exam_held_on" name="exam_held_on" required class="mt-1 block w-full border-gray-300 rounded-md shadow-sm">
+                </div>
+
+                <div class="mb-4">
+                    <label for="regulations" class="block text-sm font-medium text-gray-700">Regulations</label>
+                    <input type="text" id="regulations" name="regulations" required class="mt-1 block w-full border-gray-300 rounded-md shadow-sm">
+                </div>
+
+                <button type="submit" class="w-full bg-blue-600 text-white py-3 rounded-md shadow-md hover:bg-blue-700 transition-all duration-300">
+                    Add Record
+                </button>
+            </form>
+        </section>
+    </div>
+
+    <!-- Semester Records Section -->
+    {% include "examination/academic_records_partial.html" %}
+</main>
+{% endblock %}

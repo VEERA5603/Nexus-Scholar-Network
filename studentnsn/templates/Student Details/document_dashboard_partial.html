@@ -1,0 +1,256 @@
+<div class="status-grid grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <!-- Personal Information -->
+    <div class="bg-white shadow-md rounded-lg p-6 border border-gray-200">
+        <div class="flex justify-between items-center mb-4">
+            <span class="text-lg font-semibold text-gray-800">Personal Information</span>
+            <div class="w-5 h-5 rounded-full {% if document_status.personal_info.complete %}bg-green-500{% else %}bg-red-500{% endif %}"></div>
+        </div>
+        <div class="space-y-4">
+            <div class="bg-gray-100 rounded-full h-3 overflow-hidden">
+                <div class="bg-blue-500 h-full" style="width: {{ document_status.personal_info.fields.completion_percentage }}%"></div>
+            </div>
+            <p class="text-sm text-gray-600">{{ document_status.personal_info.fields.filled }} of {{ document_status.personal_info.fields.total }} fields completed</p>
+            {% if not document_status.personal_info.complete %}
+                <div class="text-red-600">
+                    <p class="font-medium mb-2">Missing fields:</p>
+                    {% for field in document_status.personal_info.fields.missing %}
+                        <div class="text-sm">• {{ field }}</div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Brief Details -->
+    <div class="bg-white shadow-md rounded-lg p-6 border border-gray-200">
+        <div class="flex justify-between items-center mb-4">
+            <span class="text-lg font-semibold text-gray-800">Brief Details</span>
+            <div class="w-5 h-5 rounded-full 
+                {% if not document_status.brief_details.exists %}bg-red-500
+                {% elif document_status.brief_details.complete %}bg-green-500
+                {% else %}bg-yellow-500{% endif %}">
+            </div>
+        </div>
+        <div class="text-sm text-gray-600">
+            {% if document_status.brief_details.exists %}
+                {% if document_status.brief_details.complete %}
+                    <p>All brief details are complete</p>
+                {% else %}
+                    <p>Brief details exist but some information is missing</p>
+                {% endif %}
+            {% else %}
+                <p>Brief details not submitted</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Additional Status Cards will follow the same pattern -->
+    <!-- Rejoin Details (if required) -->
+    {% if document_status.rejoin_details.required %}
+    <div class="bg-white shadow-md rounded-lg p-6 border border-gray-200">
+        <div class="flex justify-between items-center mb-4">
+            <span class="text-lg font-semibold text-gray-800">Rejoin Details</span>
+            <div class="w-5 h-5 rounded-full 
+                {% if not document_status.rejoin_details.exists %}bg-red-500
+                {% elif document_status.rejoin_details.complete %}bg-green-500
+                {% else %}bg-yellow-500{% endif %}">
+            </div>
+        </div>
+        <div class="text-sm text-gray-600">
+            {% if document_status.rejoin_details.exists %}
+                {% if document_status.rejoin_details.complete %}
+                    <p>All rejoin details are complete</p>
+                {% else %}
+                    <p>Rejoin details exist but some information is missing</p>
+                {% endif %}
+            {% else %}
+                <p>Rejoin details not submitted</p>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Hostel Details -->
+    <div class="bg-white shadow-md rounded-lg p-6 border border-gray-200">
+        <div class="flex justify-between items-center mb-4">
+            <span class="text-lg font-semibold text-gray-800">Hostel Details</span>
+            <div class="w-5 h-5 rounded-full 
+                {% if not document_status.hostel_details.exists %}bg-yellow-500
+                {% elif document_status.hostel_details.complete %}bg-green-500
+                {% else %}bg-yellow-500{% endif %}">
+            </div>
+        </div>
+        <div class="text-sm text-gray-600">
+            {% if document_status.hostel_details.exists %}
+                {% if document_status.hostel_details.complete %}
+                    <p>All hostel details are complete</p>
+                {% else %}
+                    <p>Hostel details exist but some information is missing</p>
+                {% endif %}
+            {% else %}
+                <p>Hostel details not submitted (optional)</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Bank Details -->
+    <div class="bg-white shadow-md rounded-lg p-6 border border-gray-200">
+        <div class="flex justify-between items-center mb-4">
+            <span class="text-lg font-semibold text-gray-800">Bank Details</span>
+            <div class="w-5 h-5 rounded-full 
+                {% if not document_status.bank_details.exists %}bg-red-500
+                {% elif document_status.bank_details.complete %}bg-green-500
+                {% else %}bg-yellow-500{% endif %}">
+            </div>
+        </div>
+        <div class="text-sm text-gray-600">
+            {% if document_status.bank_details.exists %}
+                {% if document_status.bank_details.complete %}
+                    <p>All bank details are complete</p>
+                {% else %}
+                    <p>Bank details exist but some information is missing</p>
+                {% endif %}
+            {% else %}
+                <p>Bank details not submitted</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Scholarships -->
+    <div class="bg-white shadow-md rounded-lg p-6 border border-gray-200">
+        <div class="flex justify-between items-center mb-4">
+            <span class="text-lg font-semibold text-gray-800">Scholarships</span>
+            <div class="w-5 h-5 rounded-full 
+                {% if not document_status.scholarships.exists %}bg-yellow-500
+                {% else %}bg-green-500{% endif %}">
+            </div>
+        </div>
+        <div class="text-sm text-gray-600">
+            {% if document_status.scholarships.exists %}
+                <p>Scholarship information submitted</p>
+            {% else %}
+                <p>No scholarship information submitted (optional)</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Academic Details -->
+    <div class="bg-white shadow-md rounded-lg p-6 border border-gray-200">
+        <div class="flex justify-between items-center mb-4">
+            <span class="text-lg font-semibold text-gray-800">Academic Details</span>
+            <div class="w-5 h-5 rounded-full 
+                {% if not document_status.academics.exists %}bg-red-500
+                {% elif document_status.academics.complete %}bg-green-500
+                {% else %}bg-yellow-500{% endif %}">
+            </div>
+        </div>
+        <div class="text-sm text-gray-600">
+            {% if document_status.academics.exists %}
+                {% if document_status.academics.complete %}
+                    <p>All academic details are complete</p>
+                {% else %}
+                    <p>Academic details exist but some information is missing</p>
+                {% endif %}
+            {% else %}
+                <p>Academic details not submitted</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Personal Documents -->
+    <div class="bg-white shadow-md rounded-lg p-6 border border-gray-200">
+        <div class="flex justify-between items-center mb-4">
+            <span class="text-lg font-semibold text-gray-800">Personal Documents</span>
+            <div class="w-5 h-5 rounded-full 
+                {% if not document_status.personal_documents.exists %}bg-red-500
+                {% elif document_status.personal_documents.complete %}bg-green-500
+                {% else %}bg-yellow-500{% endif %}">
+            </div>
+        </div>
+        <div class="text-sm text-gray-600">
+            {% if document_status.personal_documents.exists %}
+                {% if document_status.personal_documents.complete %}
+                    <p>All required documents are uploaded</p>
+                {% else %}
+                    <p>Some documents are missing:</p>
+                    <div class="text-red-600 mt-2">
+                        {% for doc in document_status.personal_documents.missing_docs %}
+                            <div>• {{ doc }}</div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            {% else %}
+                <p>No documents uploaded yet</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- SSLC Details -->
+    <div class="bg-white shadow-md rounded-lg p-6 border border-gray-200">
+        <div class="flex justify-between items-center mb-4">
+            <span class="text-lg font-semibold text-gray-800">SSLC Details</span>
+            <div class="w-5 h-5 rounded-full 
+                {% if not document_status.sslc.exists %}bg-red-500
+                {% elif document_status.sslc.complete %}bg-green-500
+                {% else %}bg-yellow-500{% endif %}">
+            </div>
+        </div>
+        <div class="text-sm text-gray-600">
+            {% if document_status.sslc.exists %}
+                {% if document_status.sslc.complete %}
+                    <p>All SSLC details are complete</p>
+                {% else %}
+                    <p>SSLC details exist but some information is missing</p>
+                {% endif %}
+            {% else %}
+                <p>SSLC details not submitted</p>
+            {% endif %}
+        </div>
+    </div>
+    <!-- HSC Details -->
+    <div class="bg-white shadow-md rounded-lg p-6 border border-gray-200">
+        <div class="flex justify-between items-center mb-4">
+            <span class="text-lg font-semibold text-gray-800">HSC Details</span>
+            <div class="w-5 h-5 rounded-full 
+                {% if not document_status.hsc.exists %}bg-red-500
+                {% elif document_status.hsc.complete %}bg-green-500
+                {% else %}bg-yellow-500{% endif %}">
+            </div>
+        </div>
+        <div class="text-sm text-gray-600">
+            {% if document_status.hsc.exists %}
+                {% if document_status.hsc.complete %}
+                    <p>All HSC details are complete</p>
+                {% else %}
+                    <p>HSC details exist but some information is missing</p>
+                {% endif %}
+            {% else %}
+                <p>HSC details not submitted</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Semester Marksheets -->
+    <div class="bg-white shadow-md rounded-lg p-6 border border-gray-200">
+        <div class="flex justify-between items-center mb-4">
+            <span class="text-lg font-semibold text-gray-800">Semester Marksheets</span>
+            <div class="w-5 h-5 rounded-full 
+                {% if not document_status.semester_marksheets.exists %}bg-red-500
+                {% elif document_status.semester_marksheets.complete %}bg-green-500
+                {% else %}bg-yellow-500{% endif %}">
+            </div>
+        </div>
+        <div class="text-sm text-gray-600">
+            {% if document_status.semester_marksheets.exists %}
+                <p>{{ document_status.semester_marksheets.count }} marksheets uploaded</p>
+                {% if document_status.semester_marksheets.complete %}
+                    <p>All required marksheets are uploaded</p>
+                {% else %}
+                    <p>Some semester marksheets are missing</p>
+                {% endif %}
+            {% else %}
+                <p>No semester marksheets uploaded yet</p>
+            {% endif %}
+        </div>
+    </div>
+</div>

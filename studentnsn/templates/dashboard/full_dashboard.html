@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Document Dashboard</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- HTMX -->
+    <script src="https://unpkg.com/htmx.org@1.9.6"></script>
+    <style>
+        .status-indicator {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+        .complete {
+            background-color: #28a745;
+        }
+        .incomplete {
+            background-color: #dc3545;
+        }
+        .card {
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .section-title {
+            font-weight: 600;
+            color: #495057;
+        }
+        .refresh-btn {
+            cursor: pointer;
+        }
+        .progress {
+            height: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container py-4" 
+         hx-get="/dashboard/" 
+         hx-trigger="load, every 30s"
+         hx-target="#dashboard-content"
+         hx-swap="innerHTML">
+        
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2 class="mb-0">Student Document Dashboard</h2>
+            <button class="btn btn-sm btn-outline-primary refresh-btn" 
+                    hx-get="/dashboard/"
+                    hx-target="#dashboard-content"
+                    hx-swap="innerHTML"
+                    hx-indicator=".progress">
+                <i class="bi bi-arrow-clockwise"></i> Refresh
+            </button>
+        </div>
+
+        <div class="progress mb-3" id="progress-bar" style="display: none;">
+            <div class="progress-bar progress-bar-striped progress-bar-animated" style="width: 100%"></div>
+        </div>
+
+        <div id="dashboard-content">
+            <!-- Content will be loaded here via HTMX -->
+            <div class="text-center py-5">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+                <p class="mt-2">Loading dashboard...</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // HTMX indicators
+        document.body.addEventListener('htmx:configRequest', function(evt) {
+            document.getElementById('progress-bar').style.display = 'block';
+        });
+
+        document.body.addEventListener('htmx:afterRequest', function(evt) {
+            document.getElementById('progress-bar').style.display = 'none';
+        });
+    </script>
+</body>
+</html>

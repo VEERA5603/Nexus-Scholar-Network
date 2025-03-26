@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Academic Information</title>
+    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        document.body.addEventListener('htmx:configRequest', function(evt) {});
+
+        document.body.addEventListener('htmx:afterSettle', function(evt) {
+            if (evt.detail.xhr.status === 200 && evt.detail.xhr.getResponseHeader('HX-Redirect')) {
+                window.location.href = evt.detail.xhr.getResponseHeader('HX-Redirect');
+            }
+        });
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const session_id = document.cookie.split('; ').find(row => row.startsWith('session_id='));
+            if (!session_id) {
+                window.location.href = '/student/login/';
+            }
+        });
+    </script>
+</head>
+<body class="bg-gray-100">
+    <style>
+        .header-animation {
+          transition: all 0.3s ease;
+        }
+        
+        .back-button {
+          transition: transform 0.2s ease;
+        }
+        
+        .back-button:active {
+          transform: scale(0.9);
+        }
+        
+        .pill-badge {
+          animation: fadeIn 0.5s ease-out;
+        }
+        
+        @keyframes fadeIn {
+          from { opacity: 0; transform: translateY(-10px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+      </style>
+      
+      <header class="bg-gradient-to-r from-blue-800 to-blue-600 text-white shadow-lg fixed top-0 left-0 right-0 z-50 header-animation" style="height: 64px; min-height: 64px;">
+        <div class="flex items-center justify-between h-full px-3">
+          <!-- Back button with animation -->
+          <a href="/student/dash/" class="back-button flex items-center justify-center bg-white/10 rounded-full p-1.5 hover:bg-white/20">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+            </svg>
+          </a>
+          
+          <!-- Title - centered -->
+          <h1 class="text-lg font-bold">Academics Information</h1>
+          
+          <!-- Roll number pill with animation -->
+          <div class="pill-badge bg-white/20 rounded-full px-3 py-0.5">
+            <p class="text-xs font-medium">{{ roll_number }}</p>
+          </div>
+        </div>
+      </header>
+      
+      <!-- Spacer to prevent content from hiding under fixed header -->
+      <div style="height: 64px;"></div>
+
+    <main class="container mx-auto px-4 py-6 md:py-8">
+        <div class="bg-blue-50 rounded-lg shadow-md p-4 md:p-6 max-w-4xl mx-auto">
+            <div class="mb-6">
+            </div>
+            
+            <div class="container">
+                <main>
+                    <div id="form-container">
+                        {% include 'academics/academics_form.html' %}
+                    </div>
+                </main>
+            </div>
+    </main>
+
+   
+</body>
+</html>

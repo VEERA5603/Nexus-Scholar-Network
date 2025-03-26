@@ -1,0 +1,123 @@
+{% extends "admin/base_site.html" %}
+
+{% block title %}{{ title }} | {{ site_title }}{% endblock %}
+
+{% block extrahead %}
+{{ block.super }}
+<style>
+    :root {
+        --primary: #4682B4;
+        --secondary: #20B2AA;
+        --accent: #FFD700;
+        --primary-fg: #fff;
+    }
+    
+    #header {
+        background: linear-gradient(to right, var(--primary), var(--secondary));
+        color: var(--primary-fg);
+    }
+    
+    .module h2, .module caption, .inline-group h2 {
+        background: var(--primary);
+    }
+    
+    div.breadcrumbs {
+        background: var(--secondary);
+    }
+    
+    .button, input[type=submit], input[type=button], .submit-row input, a.button {
+        background: var(--primary);
+    }
+    
+    .button:hover, input[type=submit]:hover, input[type=button]:hover {
+        background: var(--secondary);
+    }
+    
+    .button.default, input[type=submit].default, .submit-row input.default {
+        background: var(--accent);
+        color: #000;
+    }
+    
+    /* Improving table appearance */
+    #changelist table {
+        border-collapse: separate;
+        border-spacing: 0;
+        border-radius: 5px;
+        overflow: hidden;
+        box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    
+    #changelist th {
+        background-color: #4682B4;
+        color: white;
+        padding: 12px;
+        font-weight: bold;
+    }
+    
+    #changelist td {
+        padding: 10px;
+        border-bottom: 1px solid #eee;
+    }
+    
+    #changelist tr:hover {
+        background-color: #f9f9f9;
+    }
+    
+    /* Custom styling for admin models */
+    .model-academics .module h2 { background-color: #4682B4; }
+    .model-personalinformation .module h2 { background-color: #20B2AA; }
+    .model-examination .module h2 { background-color: #5F9EA0; }
+    .model-hsc .module h2 { background-color: #6495ED; }
+    .model-sslc .module h2 { background-color: #7B68EE; }
+    .model-hosteller .module h2 { background-color: #9370DB; }
+    .model-scholarship .module h2 { background-color: #BA55D3; }
+    
+    /* Semester filter styles */
+    .semester-filter {
+        margin: 15px 0;
+        padding: 10px;
+        background-color: #f5f5f5;
+        border-radius: 5px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+    
+    .semester-button {
+        padding: 5px 15px;
+        border-radius: 20px;
+        border: none;
+        cursor: pointer;
+        transition: all 0.3s;
+        font-weight: bold;
+    }
+    
+    .semester-button:hover {
+        transform: scale(1.05);
+    }
+    
+    .semester-button.active {
+        box-shadow: 0 0 5px rgba(0,0,0,0.3);
+    }
+    
+    /* Color scheme for semester buttons */
+    .semester-1 { background-color: #FFD700; color: #000; }
+    .semester-2 { background-color: #87CEEB; color: #000; }
+    .semester-3 { background-color: #90EE90; color: #000; }
+    .semester-4 { background-color: #FFA07A; color: #000; }
+    .semester-5 { background-color: #DDA0DD; color: #000; }
+    .semester-6 { background-color: #20B2AA; color: #000; }
+    .semester-7 { background-color: #FF6347; color: #000; }
+    .semester-8 { background-color: #4682B4; color: #fff; }
+</style>
+{% endblock %}
+
+{% block branding %}
+<h1 id="site-name">
+    <span style="color: #4682B4; font-size: 24px;">Department of Information Technology</span>
+</h1>
+{% endblock %}
+
+{% block welcome-msg %}
+<span style="color: #20B2AA;">Welcome to Student Information System</span>
+{% endblock %}

@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/htmx.org@1.9.6"></script>
+</head>
+<body class="bg-gray-100 min-h-screen">
+    
+    <header class="bg-gradient-to-r from-blue-800 to-blue-600 text-white shadow-lg fixed top-0 left-0 right-0 z-50 header-animation" style="height: 64px; min-height: 64px;">
+        <div class="flex items-center justify-between h-full px-3">
+          <!-- Back button with animation -->
+          <a href="/student/dash/" class="back-button flex items-center justify-center bg-white/10 rounded-full p-1.5 hover:bg-white/20">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+            </svg>
+          </a>
+          
+          <!-- Title - centered -->
+          <h1 class="text-lg font-bold">Document Status</h1>
+          
+          <!-- Roll number pill with animation -->
+          <div class="pill-badge bg-white/20 rounded-full px-3 py-0.5">
+            <p class="text-xs font-medium">{{ roll_number }}</p>
+          </div>
+        </div>
+      </header>
+    <div class="container mx-auto px-4 py-8 max-w-7xl">
+        <div class="text-center mb-10">
+            <h1 class="text-3xl font-bold text-gray-800 mb-2"></h1>
+        </br>
+        </br>
+        </br>
+            <p class="text-gray-600">Student: {{ student.first_name }} {{ student.last_name }} ({{ roll_number }})</p>
+        </div>
+        
+        <div id="dashboard-content" 
+             hx-get="{% url 'document-dashboard' %}" 
+             hx-trigger="every 30s"
+             class="w-full">
+            {% include 'Student Details/document_dashboard_partial.html' %}
+        </div>
+    </div>
+</body>
+</html>

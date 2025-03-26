@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generate Student Report</title>
+    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        document.body.addEventListener('htmx:configRequest', function(evt) {});
+
+        document.body.addEventListener('htmx:afterSettle', function(evt) {
+            if (evt.detail.xhr.status === 200 && evt.detail.xhr.getResponseHeader('HX-Redirect')) {
+                window.location.href = evt.detail.xhr.getResponseHeader('HX-Redirect');
+            }
+        });
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const session_id = document.cookie.split('; ').find(row => row.startsWith('session_id='));
+            if (!session_id) {
+                window.location.href = '/student/login/';
+            }
+        });
+    </script>
+    <style>
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        .animate-spin {
+            animation: spin 1s linear infinite;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <style>
+        .header-animation {
+          transition: all 0.3s ease;
+        }
+        
+        .back-button {
+          transition: transform 0.2s ease;
+        }
+        
+        .back-button:active {
+          transform: scale(0.9);
+        }
+        
+        .pill-badge {
+          animation: fadeIn 0.5s ease-out;
+        }
+        
+        @keyframes fadeIn {
+          from { opacity: 0; transform: translateY(-10px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+      </style>
+      
+      <header class="bg-gradient-to-r from-blue-800 to-blue-600 text-white shadow-lg fixed top-0 left-0 right-0 z-50 header-animation" style="height: 64px; min-height: 64px;">
+        <div class="flex items-center justify-between h-full px-3">
+          <!-- Back button with animation -->
+          <a href="/student/dash/" class="back-button flex items-center justify-center bg-white/10 rounded-full p-1.5 hover:bg-white/20">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+            </svg>
+          </a>
+          
+          <!-- Title - centered -->
+          <h1 class="text-lg font-bold">Generate Records</h1>
+          
+          <!-- Roll number pill with animation -->
+          <div class="pill-badge bg-white/20 rounded-full px-3 py-0.5">
+            <p class="text-xs font-medium">{{ roll_number }}</p>
+          </div>
+        </div>
+      </header>
+      
+      <!-- Spacer to prevent content from hiding under fixed header -->
+      <div style="height: 64px;"></div>
+    <div class="container mx-auto px-4 py-8 max-w-4xl">
+        <!-- Header Section -->
+        
+
+        <!-- Main Form Section -->
+        <div class="bg-gradient-to-r from-blue-100 to-blue-300 p-6 bg-white rounded-lg shadow-lg p-6">
+            <form hx-post="{% url 'report-details' %}"
+                  hx-trigger="submit"
+                  hx-target="#download-trigger"
+                  hx-indicator="#loading"
+                  class="space-y-6">
+                {% csrf_token %}
+
+                <!-- Selection Cards -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <!-- Personal Information Card -->
+                    <div class="border rounded-lg p-4 hover:shadow-md transition-shadow">
+                        <div class="flex items-start space-x-3">
+                            <input type="checkbox" 
+                                   id="personal" 
+                                   name="tables[]" 
+                                   value="personal"
+                                   class="mt-1 h-5 w-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                            <div>
+                                <label for="personal" class="font-medium text-gray-900 block">Personal Information</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Brief Details Card -->
+                    <div class="border rounded-lg p-4 hover:shadow-md transition-shadow">
+                        <div class="flex items-start space-x-3">
+                            <input type="checkbox" 
+                                   id="brief" 
+                                   name="tables[]" 
+                                   value="brief"
+                                   class="mt-1 h-5 w-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                            <div>
+                                <label for="brief" class="font-medium text-gray-900 block">Brief Details</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Bank Details Card -->
+                    <div class="border rounded-lg p-4 hover:shadow-md transition-shadow">
+                        <div class="flex items-start space-x-3">
+                            <input type="checkbox" 
+                                   id="bank" 
+                                   name="tables[]" 
+                                   value="bank"
+                                   class="mt-1 h-5 w-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                            <div>
+                                <label for="bank" class="font-medium text-gray-900 block">Bank Details</label>
+                            </div>
+                        </div>
+                    </div>
+               
+
+                <!-- Academics Details Card -->
+                <div class="border rounded-lg p-4 hover:shadow-md transition-shadow">
+                    <div class="flex items-start space-x-3">
+                        <input type="checkbox" 
+                               id="academics" 
+                               name="tables[]" 
+                               value="academics"
+                               class="mt-1 h-5 w-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                        <div>
+                            <label for="academics" class="font-medium text-gray-900 block">Academics Details</label>
+                        </div>
+                    </div>
+                </div>
+                <!-- SSLC Details Card -->
+                <div class="border rounded-lg p-4 hover:shadow-md transition-shadow">
+                    <div class="flex items-start space-x-3">
+                        <input type="checkbox" 
+                               id="sslc" 
+                               name="tables[]" 
+                               value="sslc"
+                               class="mt-1 h-5 w-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                        <div>
+                            <label for="sslc" class="font-medium text-gray-900 block">SSLC Details</label>
+                        </div>
+                    </div>
+                </div>
+                <!-- HSC Details Card -->
+                <div class="border rounded-lg p-4 hover:shadow-md transition-shadow">
+                    <div class="flex items-start space-x-3">
+                        <input type="checkbox" 
+                               id="hsc" 
+                               name="tables[]" 
+                               value="hsc"
+                               class="mt-1 h-5 w-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                        <div>
+                            <label for="hsc" class="font-medium text-gray-900 block">HSC Details</label>
+                        </div>
+                    </div>
+                </div>
+                <!-- Scholarship Details Card -->
+                <div class="border rounded-lg p-4 hover:shadow-md transition-shadow">
+                    <div class="flex items-start space-x-3">
+                        <input type="checkbox" 
+                               id="scholarship" 
+                               name="tables[]" 
+                               value="scholarship"
+                               class="mt-1 h-5 w-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                        <div>
+                            <label for="scholarship" class="font-medium text-gray-900 block">Scholarship Details</label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Hostellar Details Card -->
+                <div class="border rounded-lg p-4 hover:shadow-md transition-shadow">
+                    <div class="flex items-start space-x-3">
+                        <input type="checkbox" 
+                               id="hostellar" 
+                               name="tables[]" 
+                               value="hostellar"
+                               class="mt-1 h-5 w-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                        <div>
+                            <label for="hostellar" class="font-medium text-gray-900 block">Hostel Details</label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Hostellar Details Card -->
+                <div class="border rounded-lg p-4 hover:shadow-md transition-shadow">
+                    <div class="flex items-start space-x-3">
+                        <input type="checkbox" 
+                               id="ds" 
+                               name="tables[]" 
+                               value="ds"
+                               class="mt-1 h-5 w-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                        <div>
+                            <label for="ds" class="font-medium text-gray-900 block">Diploma Student Details</label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Rejoin Details Card -->
+                <div class="border rounded-lg p-4 hover:shadow-md transition-shadow">
+                    <div class="flex items-start space-x-3">
+                        <input type="checkbox" 
+                               id="rejoin" 
+                               name="tables[]" 
+                               value="rejoin"
+                               class="mt-1 h-5 w-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                        <div>
+                            <label for="rejoin" class="font-medium text-gray-900 block">Rejoin Student Details</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+                <!-- Error Message (Initially Hidden) -->
+                <div id="error-message" 
+                     class="hidden bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg">
+                    Please select at least one option to generate the report.
+                </div>
+
+                <!-- Submit Button Section -->
+                <div class="flex items-center justify-between pt-4 border-t">
+                    <button type="submit"
+                            class="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-2 rounded-lg flex items-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                            onclick="return validateForm()">
+                        <span>Generate PDF</span>
+                        <svg xmlns="http://www.w3.org/2000/svg" 
+                             class="h-5 w-5" 
+                             viewBox="0 0 20 20" 
+                             fill="currentColor">
+                            <path fill-rule="evenodd" 
+                                  d="M6 2a2 2 0 00-2 2v12a2 2 0 002 2h8a2 2 0 002-2V7.414A2 2 0 0015.414 6L12 2.586A2 2 0 0010.586 2H6zm5 6a1 1 0 10-2 0v3.586L7.707 10.293a1 1 0 10-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L11 11.586V8z" 
+                                  clip-rule="evenodd" />
+                        </svg>
+                    </button>
+
+                    <!-- Loading Indicator (Initially Hidden) -->
+                    <div id="loading" 
+                         class="hidden items-center space-x-2 text-gray-500">
+                        <svg class="animate-spin h-5 w-5" 
+                             xmlns="http://www.w3.org/2000/svg" 
+                             fill="none" 
+                             viewBox="0 0 24 24">
+                            <circle class="opacity-25" 
+                                    cx="12" 
+                                    cy="12" 
+                                    r="10" 
+                                    stroke="currentColor" 
+                                    stroke-width="4"></circle>
+                            <path class="opacity-75" 
+                                  fill="currentColor" 
+                                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        <span>Generating PDF...</span>
+                    </div>
+                </div>
+            </form>
+
+            <!-- Hidden download trigger element -->
+            <div id="download-trigger" hx-swap-oob="true"></div>
+        </div>
+
+        <!-- Help Section -->
+        <div class="mt-8 bg-blue-50 rounded-lg p-4">
+            <h2 class="text-blue-800 font-semibold mb-2">Need Help?</h2>
+            <p class="text-blue-600 text-sm">
+                Select the checkboxes for the information you want to include in your PDF report. 
+                You can select multiple options. The generated PDF will only include your details.
+            </p>
+        </div>
+    </div>
+
+    <script>
+        function validateForm() {
+            const checkboxes = document.querySelectorAll('input[type="checkbox"]');
+            const errorMessage = document.getElementById('error-message');
+            let isChecked = false;
+
+            checkboxes.forEach(checkbox => {
+                if (checkbox.checked) {
+                    isChecked = true;
+                }
+            });
+
+            if (!isChecked) {
+                errorMessage.classList.remove('hidden');
+                return false;
+            }
+
+            errorMessage.classList.add('hidden');
+            return true;
+        }
+
+        // HTMX event handlers
+        document.body.addEventListener('htmx:beforeRequest', function(evt) {
+            document.getElementById('loading').classList.remove('hidden');
+            document.getElementById('loading').classList.add('flex');
+        });
+
+        document.body.addEventListener('htmx:afterRequest', function(evt) {
+            document.getElementById('loading').classList.add('hidden');
+            document.getElementById('loading').classList.remove('flex');
+        });
+
+        // Handle PDF download response
+        document.body.addEventListener('htmx:beforeOnLoad', function(evt) {
+            if (evt.detail.xhr.getResponseHeader('Content-Type') === 'application/pdf') {
+                const blob = new Blob([evt.detail.xhr.response], { type: 'application/pdf' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'student_details.pdf';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                evt.preventDefault();
+            }
+        });
+
+        // Clear error message when any checkbox is checked
+        document.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
+            checkbox.addEventListener('change', function() {
+                document.getElementById('error-message').classList.add('hidden');
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,26 @@
+
+<!-- marksheet_card.html -->
+<div id="marksheet-{{ marksheet.id }}" class="bg-white p-4 rounded-lg shadow-sm">
+    <div class="flex flex-col space-y-2">
+        <div>
+            <h3 class="text-sm font-medium">Register Number:</h3>
+            <p class="text-sm text-gray-500">{{ marksheet.register_number }}</p>
+        </div>
+        <div>
+            <p class="text-sm text-gray-500">Uploaded: {{ marksheet.created_at|date:"M d, Y" }}</p>
+        </div>
+        <div class="flex space-x-2 mt-2">
+            <a href="{{ marksheet.marksheet.url }}" 
+               class="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+               target="_blank">
+                View
+            </a>
+          <!--  <button hx-delete="/marksheets/{{ marksheet.id }}/"
+                    hx-target="#marksheets-{{ marksheet.id }}"
+                    hx-swap="outerHTML"
+                    class="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
+                Delete
+            </button> -->
+        </div>
+    </div>
+</div>

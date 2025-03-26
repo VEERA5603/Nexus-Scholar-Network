@@ -1,0 +1,129 @@
+{% if message %}
+<div class="mb-6 p-4 rounded-lg bg-green-100 text-green-700 border border-green-200">
+    {{ message }}
+</div>
+{% endif %}
+
+<form hx-post="{% url 'academics' %}" 
+      hx-target="#form-container"
+      hx-swap="innerHTML"
+      class="space-y-6">
+    {% csrf_token %}
+    
+    <div class="bg-gradient-to-r from-blue-100 to-blue-300 p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="space-y-2">
+            <label class="block text-sm font-medium text-gray-700">Course</label>
+            <select name="course" required
+                    class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-white">
+                {% for value, label in courses %}
+                    <option value="{{ value }}" {% if academic_data.course == value %}selected{% endif %}>
+                        {{ label }}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="space-y-2">
+            <label class="block text-sm font-medium text-gray-700">Department</label>
+            <input type="text" 
+                   name="department" 
+                   value="{{ academic_data.department|default:'' }}"
+                   required
+                   class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+        </div>
+
+        <div class="space-y-2">
+            <label class="block text-sm font-medium text-gray-700">Current Year</label>
+            <select name="current_year" required
+                    class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-white">
+                {% for value, label in years %}
+                    <option value="{{ value }}" {% if academic_data.current_year == value %}selected{% endif %}>
+                        {{ label }}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="space-y-2">
+            <label class="block text-sm font-medium text-gray-700">Current Semester</label>
+            <select name="current_semester" required
+                    class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-white">
+                {% for value, label in semesters %}
+                    <option value="{{ value }}" {% if academic_data.current_semester == value %}selected{% endif %}>
+                        {{ label }}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="space-y-2">
+            <label class="block text-sm font-medium text-gray-700">Year of Joining</label>
+            <input type="date" 
+                   name="year_joining" 
+                   value="{{ academic_data.year_joining|date:'Y-m-d'|default:'' }}"
+                   required
+                   class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+        </div>
+
+        <div class="space-y-2">
+            <label class="block text-sm font-medium text-gray-700">Type of Admission</label>
+            <input type="text" 
+                   name="type_of_admission" 
+                   value="{{ academic_data.type_of_admission|default:'' }}"
+                   required
+                   class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+        </div>
+
+        <div class="space-y-2">
+            <label class="block text-sm font-medium text-gray-700">Admission Type</label>
+            <input type="text" 
+                   name="admission_type" 
+                   value="{{ academic_data.admission_type|default:'' }}"
+                   required
+                   class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+        </div>
+
+        <div class="space-y-2">
+            <label class="block text-sm font-medium text-gray-700">EMIS Number</label>
+            <input type="number" 
+                   name="emis_number" 
+                   value="{{ academic_data.emis_number|default:'' }}"
+                   required
+                   class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+        </div>
+
+        <div class="space-y-2">
+            <label class="block text-sm font-medium text-gray-700">UMIS Number</label>
+            <input type="number" 
+                   name="umis_number" 
+                   value="{{ academic_data.umis_number|default:'' }}"
+                   required
+                   class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+        </div>
+
+        <div class="space-y-2">
+            <label class="block text-sm font-medium text-gray-700">Class Incharge</label>
+            <input type="text" 
+                   name="class_incharge" 
+                   value="{{ academic_data.class_incharge|default:'' }}"
+                   required
+                   class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+        </div>
+
+        <div class="space-y-2">
+            <label class="block text-sm font-medium text-gray-700">Class Room Number</label>
+            <input type="number" 
+                   name="class_room_number" 
+                   value="{{ academic_data.class_room_number|default:'' }}"
+                   required
+                   class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+        </div>
+    </div>
+
+    <div class="flex justify-end mt-6">
+        <button type="submit"
+                class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors">
+            {% if academic_data %}Update{% else %}Save{% endif %} Academic Information
+        </button>
+    </div>
+</form>

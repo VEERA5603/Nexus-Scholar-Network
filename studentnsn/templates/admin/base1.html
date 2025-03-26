@@ -1,0 +1,12 @@
+{% extends "admin/base_site.html" %}
+
+{% block content %}
+    {{ block.super }}
+{% endblock %}
+
+{% block nav-global %}
+    {{ block.super }}
+    <div style="padding: 10px 20px;">
+        <a href="/admin/analytics/" class="button">View Analytics</a>
+    </div>
+{% endblock %}

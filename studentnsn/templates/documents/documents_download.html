@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Personal Documents</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/htmx.org@1.9.6"></script>
+    <script>
+        // Ensure CSRF token is included in HTMX requests
+        document.body.addEventListener('htmx:configRequest', function(evt) {
+            const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]')?.value;
+            if (csrfToken) {
+                evt.detail.headers['X-CSRFToken'] = csrfToken;
+            }
+        });
+
+        // Handle successful login redirect
+        document.body.addEventListener('htmx:afterSettle', function(evt) {
+            if (evt.detail.xhr.status === 200 && evt.detail.xhr.getResponseHeader('HX-Redirect')) {
+                window.location.href = evt.detail.xhr.getResponseHeader('HX-Redirect');
+            }
+        });
+
+        // Check session on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            const session_id = document.cookie.split('; ').find(row => row.startsWith('session_id='));
+            if (!session_id) {
+                window.location.href = '/student/login/';
+            }
+        });
+    </script>
+    <style>
+        .htmx-indicator {
+            opacity: 0;
+            transition: opacity 200ms ease-in;
+        }
+        .htmx-request .htmx-indicator {
+            opacity: 1
+        }
+        .htmx-request.htmx-indicator {
+            opacity: 1
+        }
+        .document-card {
+            transition: all 0.3s ease;
+        }
+        .document-card:hover {
+            transform: translateY(-5px);
+        }
+        .card-checkbox:checked + .card-container {
+            border-color: #4F46E5;
+            box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.3);
+        }
+        .card-checkbox:checked + .card-container .check-indicator {
+            opacity: 1;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <header class="bg-gradient-to-r from-blue-800 to-blue-600 text-white shadow-lg fixed top-0 left-0 right-0 z-50 header-animation" style="height: 64px; min-height: 64px;">
+        <div class="flex items-center justify-between h-full px-3">
+          <!-- Back button with animation -->
+          <a href="/student/dash/" class="back-button flex items-center justify-center bg-white/10 rounded-full p-1.5 hover:bg-white/20">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+            </svg>
+          </a>
+          
+          <!-- Title - centered -->
+          <h1 class="text-lg font-bold">Download Documents</h1>
+          
+          <!-- Roll number pill with animation -->
+          <div class=" rounded-full px-3 py-0.5">
+          </div>
+        </div>
+      </header>
+      
+      <!-- Spacer to prevent content from hiding under fixed header -->
+      <div style="height: 64px;"></div>
+    <main class="container mx-auto px-6 py-10">
+        <div class="mb-8">
+            <h2 class="text-2xl font-semibold text-gray-800 mb-2">Your Documents</h2>
+            <p class="text-gray-600">Select documents to download or view</p>
+        </div>
+
+        <div id="error-message" class="mb-4"></div>
+
+        <form id="download-form"
+              method="POST" 
+              action="{% url 'download' %}"
+              class="mb-10">
+            {% csrf_token %}
+
+            <div class="bg-gradient-to-r from-blue-100 to-blue-300 p-6 rounded-lg shadow-xl border border-blue-400 col-span-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                {% for field_name, field_value in documents.items %}
+                    {% if field_value %}
+                    <div class="document-card">
+                        <input type="checkbox"
+                               id="{{ field_name }}"
+                               name="selected_documents"
+                               value="{{ field_name }}"
+                               class="card-checkbox sr-only">
+                        <label for="{{ field_name }}" class="card-container block cursor-pointer h-full">
+                            <div class="bg-white rounded-xl overflow-hidden shadow-md border-2 border-transparent h-full flex flex-col">
+                                <div class="relative">
+                                    <div class="aspect-w-16 aspect-h-9 bg-gray-100">
+                                        <img src="{{ field_value.url }}"
+                                             alt="{{ field_name }}"
+                                             class="object-cover w-full h-48">
+                                    </div>
+                                    <div class="check-indicator absolute top-3 right-3 bg-indigo-600 text-white rounded-full w-6 h-6 flex items-center justify-center opacity-0 transition-opacity">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                                        </svg>
+                                    </div>
+                                </div>
+                                
+                                <div class="p-5 flex flex-col flex-grow">
+                                    <h3 class="font-medium text-gray-900 mb-1">{{ field_name|cut:"_"|title }}</h3>
+                                    <div class="flex items-center text-gray-500 text-sm mt-auto">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                        </svg>
+                                        <span>Document</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </label>
+                    </div>
+                    {% endif %}
+                {% empty %}
+                    <div class="col-span-full flex flex-col items-center justify-center h-64 bg-white rounded-xl border-2 border-dashed border-gray-300 p-6">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-gray-400 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 13h6m-3-3v6m-9 1V7a2 2 0 012-2h6l2 2h6a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z" />
+                        </svg>
+                        <p class="text-gray-500 text-center font-medium">No documents available</p>
+                        <p class="text-gray-400 text-center text-sm mt-1">Documents will appear here once uploaded</p>
+                    </div>
+                {% endfor %}
+            </div>
+
+            <div class="mt-8 flex items-center justify-end gap-4">
+                <span id="selection-count" class="text-gray-600 mr-auto text-sm"></span>
+                
+                <div id="loading" class="htmx-indicator">
+                    <svg class="animate-spin h-5 w-5 text-indigo-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                </div>
+                
+                <button type="button"
+                        onclick="submitForm()"
+                        class="inline-flex items-center px-5 py-2.5 border border-transparent text-sm font-medium rounded-lg shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition duration-300">
+                    <svg class="mr-2 -ml-1 h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                    </svg>
+                    Download Selected
+                </button>
+            </div>
+        </form>
+    </main>
+
+    <div id="toast" 
+         class="fixed bottom-6 right-6 transform transition-all duration-300 translate-y-full z-50">
+    </div>
+
+    <script>
+        function submitForm() {
+            const form = document.getElementById('download-form');
+            const selectedDocs = form.querySelectorAll('input[name="selected_documents"]:checked');
+            
+            if (selectedDocs.length === 0) {
+                const toast = document.getElementById('toast');
+                toast.innerHTML = `
+                    <div class="bg-red-500 text-white px-6 py-4 rounded-lg shadow-xl flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        Please select at least one document
+                    </div>
+                `;
+                toast.classList.remove('translate-y-full');
+                setTimeout(() => {
+                    toast.classList.add('translate-y-full');
+                }, 3000);
+                return;
+            }
+
+            // Submit form normally for file download
+            form.submit();
+        }
+
+        // Update selection count
+        document.addEventListener('DOMContentLoaded', function() {
+            const checkboxes = document.querySelectorAll('input[name="selected_documents"]');
+            const selectionCount = document.getElementById('selection-count');
+            
+            function updateCount() {
+                const count = document.querySelectorAll('input[name="selected_documents"]:checked').length;
+                if (count === 0) {
+                    selectionCount.textContent = '';
+                } else {
+                    selectionCount.textContent = `${count} document${count !== 1 ? 's' : ''} selected`;
+                }
+            }
+            
+            checkboxes.forEach(checkbox => {
+                checkbox.addEventListener('change', updateCount);
+            });
+            
+            updateCount();
+        });
+    </script>
+</body>
+</html>
