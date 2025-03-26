@@ -1,0 +1,100 @@
+<!-- templates/admin/activities_pdf_template.html -->
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>{{ academic_year.name }} - IT Department Activities</title>
+    <style>
+        @page {
+            size: A4;
+            margin: 2cm;
+        }
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.5;
+        }
+        h1 {
+            color: #14397d;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        h2 {
+            color: #3366cc;
+            border-bottom: 1px solid #3366cc;
+            padding-bottom: 5px;
+        }
+        .activity {
+            margin-bottom: 30px;
+            page-break-inside: avoid;
+        }
+        .activity-header {
+            background-color: #f5f5f5;
+            padding: 10px;
+            border-left: 4px solid #3366cc;
+        }
+        .activity-header h3 {
+            margin: 0;
+            color: #333;
+        }
+        .activity-details {
+            margin-top: 10px;
+            padding-left: 15px;
+        }
+        .meta {
+            color: #666;
+            font-size: 0.9em;
+        }
+        .activity-image {
+            max-width: 100%;
+            max-height: 300px;
+            margin: 15px 0;
+        }
+        .footer {
+            text-align: center;
+            font-size: 0.8em;
+            color: #666;
+            margin-top: 30px;
+        }
+    </style>
+</head>
+<body>
+    <h1>IT Department Activities - {{ academic_year.name }}</h1>
+    
+    <p>
+        Academic Year: {{ academic_year.name }}<br>
+        From: {{ academic_year.start_date|date:"F j, Y" }} to {{ academic_year.end_date|date:"F j, Y" }}<br>
+        Total Activities: {{ activities.count }}
+    </p>
+    
+    {% for activity in activities %}
+    <div class="activity">
+        <div class="activity-header">
+            <h3>{{ activity.title }}</h3>
+            <p class="meta">
+                Date: {{ activity.date|date:"F j, Y" }} | 
+                Venue: {{ activity.venue }}
+            </p>
+        </div>
+        
+        <div class="activity-details">
+            <p><strong>Description:</strong></p>
+            <p>{{ activity.description }}</p>
+            
+            <p><strong>Organizers:</strong> {{ activity.organizers }}</p>
+            
+            {% if activity.participants %}
+            <p><strong>Participants:</strong> {{ activity.participants }}</p>
+            {% endif %}
+            
+            {% if activity.image %}
+            <img src="{{ activity.image.url }}" class="activity-image">
+            {% endif %}
+        </div>
+    </div>
+    {% endfor %}
+    
+    <div class="footer">
+        Generated on {% now "F j, Y" %} | IT Department Activity Report
+    </div>
+</body>
+</html>

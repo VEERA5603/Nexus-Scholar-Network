@@ -1,0 +1,111 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mx-auto px-8 py-16">
+    <h1 class="text-4xl font-light mb-12 text-center text-gray-800 tracking-wide">Gallery</h1>
+    
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
+        {% for event in events %}
+            <div 
+                class="bg-white rounded-lg overflow-hidden transition-all duration-300 hover:shadow-2xl hover:-translate-y-1 cursor-pointer border-0 shadow-md"
+                hx-get="{% url 'event_images' event.id %}" 
+                hx-target="#galleryModal" 
+                hx-trigger="click"
+                hx-swap="innerHTML"
+                onclick="document.getElementById('galleryModalContainer').classList.remove('hidden');"
+            >
+                <div class="relative h-64 overflow-hidden">
+                    {% if event.images.exists %}
+                        <img 
+                            src="{{ event.images.first.image.url }}" 
+                            alt="{{ event.name }}" 
+                            class="w-full h-full object-cover transition-transform duration-700 hover:scale-105"
+                        >
+                        {% if event.images.count > 1 %}
+                            <div class="absolute bottom-4 right-4 bg-white bg-opacity-80 text-gray-800 px-4 py-1 rounded-full text-xs font-medium tracking-wide shadow-sm">
+                                {{ event.images.count }} Photos
+                            </div>
+                        {% endif %}
+                    {% else %}
+                        <div class="w-full h-full bg-gray-50 flex items-center justify-center">
+                            <span class="text-gray-300 font-light">No imagery available</span>
+                        </div>
+                    {% endif %}
+                </div>
+                
+                <div class="p-8">
+                    <h2 class="text-xl font-medium mb-2 text-gray-800">{{ event.name }}</h2>
+                    <p class="text-gray-400 mb-5 text-xs uppercase tracking-wider font-medium">{{ event.date|date:"F j, Y" }}</p>
+                    
+                    {% if event.description %}
+                        <p class="text-gray-600 line-clamp-2 text-sm leading-relaxed font-light">{{ event.description }}</p>
+                    {% endif %}
+                </div>
+            </div>
+        {% empty %}
+            <div class="col-span-full text-center py-24">
+                <div class="text-gray-300 text-2xl font-light tracking-wide">No Events Scheduled</div>
+                <p class="text-gray-500 mt-4 max-w-md mx-auto">Our event calendar is currently being updated. Please check back soon for our upcoming collection.</p>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- Gallery Modal -->
+<div id="galleryModalContainer" class="fixed inset-0 bg-black bg-opacity-95 z-50 hidden flex items-center justify-center backdrop-blur-lg transition-opacity duration-300">
+    <div class="absolute top-8 right-8">
+        <button 
+            class="text-white hover:text-gray-200 focus:outline-none transition-opacity duration-200" 
+            onclick="document.getElementById('galleryModalContainer').classList.add('hidden');"
+            aria-label="Close gallery"
+        >
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+        </button>
+    </div>
+    
+    <div id="galleryModal" class="w-full max-w-7xl max-h-[85vh] overflow-y-auto bg-white rounded-lg shadow-2xl">
+        <!-- Content will be loaded here via HTMX -->
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Enhanced modal interactions
+    const modalContainer = document.getElementById('galleryModalContainer');
+    
+    // Close modal when clicking Escape key
+    document.addEventListener('keydown', function(event) {
+        if (event.key === 'Escape' && !modalContainer.classList.contains('hidden')) {
+            closeModal();
+        }
+    });
+    
+    // Close modal when clicking outside the content area
+    modalContainer.addEventListener('click', function(event) {
+        if (event.target === this) {
+            closeModal();
+        }
+    });
+    
+    function closeModal() {
+        modalContainer.classList.add('opacity-0');
+        setTimeout(() => {
+            modalContainer.classList.add('hidden');
+            modalContainer.classList.remove('opacity-0');
+        }, 200);
+    }
+    
+    // Open modal with animation
+    document.querySelectorAll('[hx-get]').forEach(item => {
+        item.addEventListener('click', function() {
+            modalContainer.classList.add('opacity-0');
+            setTimeout(() => {
+                modalContainer.classList.remove('opacity-0');
+            }, 50);
+        });
+    });
+</script>
+{% endblock %}

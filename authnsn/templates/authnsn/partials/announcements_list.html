@@ -1,0 +1,101 @@
+{% for announcement in announcements %}
+<div class="announcement priority-{{ announcement.priority }} mb-6 rounded-lg shadow-lg overflow-hidden"
+     {% if forloop.first %}id="latest-announcement"{% endif %}>
+    <!-- Header section with priority-based styling -->
+    <div class="announcement-header p-4 flex items-center justify-between
+        {% if announcement.priority == 'high' %}bg-gradient-to-r from-red-600 to-red-500 text-white
+        {% elif announcement.priority == 'medium' %}bg-gradient-to-r from-blue-600 to-blue-500 text-white
+        {% else %}bg-gradient-to-r from-green-600 to-green-500 text-white{% endif %}">
+        <div class="flex items-center">
+            <!-- Priority icon -->
+            <div class="mr-3">
+                {% if announcement.priority == 'high' %}
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+                {% elif announcement.priority == 'medium' %}
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                {% else %}
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                {% endif %}
+            </div>
+            <!-- Title with nice typography -->
+            <h3 class="font-bold text-xl tracking-tight">{{ announcement.title }}</h3>
+        </div>
+        <span class="text-sm opacity-90 font-medium">{{ announcement.created_at|date:"M d, Y" }}</span>
+    </div>
+    
+    <!-- Main content area -->
+    <div class="bg-white p-4">
+        <!-- Scrolling message with elegant styling -->
+        <div class="scrolling-message-container overflow-hidden rounded-md bg-gray-50 p-3 mb-4 border border-gray-100">
+            <p class="scrolling-message font-medium text-gray-700">{{ announcement.message }}</p>
+        </div>
+        
+        <!-- Image carousel if images exist -->
+        {% if announcement.images.all %}
+        <div class="announcement-carousel relative rounded-lg overflow-hidden bg-gray-50 border border-gray-100">
+            <!-- Carousel controls -->
+            <div class="absolute top-0 left-0 right-0 flex justify-between p-2 z-10">
+                <button class="carousel-prev bg-white bg-opacity-70 hover:bg-opacity-100 rounded-full p-1 shadow-md transition-all duration-200 transform hover:scale-110">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                    </svg>
+                </button>
+                <button class="carousel-next bg-white bg-opacity-70 hover:bg-opacity-100 rounded-full p-1 shadow-md transition-all duration-200 transform hover:scale-110">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                    </svg>
+                </button>
+            </div>
+            
+            <!-- Image counter -->
+            <div class="absolute top-2 right-2 bg-gray-900 bg-opacity-60 text-white text-xs px-2 py-1 rounded-full z-10 image-counter">
+                <span class="current-image">1</span>/<span class="total-images">{{ announcement.images.count }}</span>
+            </div>
+            
+            <!-- Carousel items -->
+            <div class="carousel-container p-4">
+                {% for image in announcement.images.all %}
+                <div class="carousel-item absolute inset-0 w-full transition-all duration-500 ease-in-out
+                            {% if forloop.first %}opacity-100 translate-x-0{% else %}opacity-0 translate-x-full{% endif %}"
+                     data-index="{{ forloop.counter0 }}">
+                    <div class="flex justify-center items-center h-full p-2">
+                        <img src="{{ image.image.url }}" alt="{{ image.alt_text|default:announcement.title }}" 
+                             class="max-w-full max-h-full object-contain rounded shadow-sm">
+                    </div>
+                    {% if image.alt_text %}
+                    <div class="absolute bottom-0 left-0 right-0 bg-black bg-opacity-60 text-white p-2 text-sm text-center">
+                        {{ image.alt_text }}
+                    </div>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+            
+            <!-- Navigation dots -->
+            <div class="absolute bottom-2 left-0 right-0 flex justify-center space-x-2 z-10">
+                {% for image in announcement.images.all %}
+                <button class="carousel-dot w-2 h-2 rounded-full bg-white shadow-md transition-all duration-200
+                              {% if forloop.first %}w-4 bg-white{% else %}bg-white bg-opacity-60{% endif %}"
+                        data-index="{{ forloop.counter0 }}"
+                        aria-label="Go to slide {{ forloop.counter }}"></button>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% empty %}
+<div class="text-center p-8 bg-white rounded-lg shadow-md border border-gray-100">
+    <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mx-auto text-gray-400 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+    </svg>
+    <p class="text-gray-600 text-lg font-medium">No announcements at this time.</p>
+    <p class="text-gray-500 mt-2">Check back later for updates.</p>
+</div>
+{% endfor %}

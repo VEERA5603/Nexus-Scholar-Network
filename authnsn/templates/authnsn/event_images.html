@@ -1,0 +1,69 @@
+<div class="p-10 md:p-12">
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-10 border-b border-gray-100 pb-8">
+        <h2 class="text-3xl font-light text-gray-800 mb-3 md:mb-0">{{ event.name }}</h2>
+        <p class="text-gray-400 text-sm uppercase tracking-wider font-medium">{{ event.date|date:"F j, Y" }}</p>
+    </div>
+    
+    {% if event.description %}
+        <div class="mb-12 max-w-3xl">
+            <p class="text-gray-600 leading-relaxed font-light">{{ event.description }}</p>
+        </div>
+    {% endif %}
+    
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        {% for image in event.images.all %}
+            <div class="group relative overflow-hidden rounded-lg shadow-sm aspect-w-4 aspect-h-3 transition-all duration-300 hover:shadow-lg">
+                <img 
+                    src="{{ image.image.url }}" 
+                    alt="{{ image.caption|default:event.name }}" 
+                    class="w-full h-full object-cover transition-all duration-700 group-hover:scale-105"
+                    loading="lazy"
+                >
+                {% if image.caption %}
+                    <div class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black via-black/70 to-transparent text-white p-6 transform transition-transform duration-500 translate-y-full group-hover:translate-y-0 opacity-0 group-hover:opacity-100">
+                        <p class="text-sm font-light tracking-wide">{{ image.caption }}</p>
+                    </div>
+                {% endif %}
+            </div>
+        {% empty %}
+            <div class="col-span-full text-center py-20">
+                <p class="text-gray-400 font-light tracking-wide">No imagery is currently available for this event.</p>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+
+<script>
+    // Enhanced gallery interactions
+    document.addEventListener('htmx:afterSwap', function() {
+        // Staggered fade-in animation for images
+        const galleryImages = document.querySelectorAll('#galleryModal img');
+        galleryImages.forEach((img, index) => {
+            img.classList.add('opacity-0');
+            img.onload = () => {
+                img.classList.add('transition-opacity', 'duration-700');
+                setTimeout(() => {
+                    img.classList.remove('opacity-0');
+                }, 100 + (index * 50)); // Staggered animation
+            };
+        });
+        
+        // Add scroll reveal animations
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('opacity-100', 'translate-y-0');
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, {
+            threshold: 0.1
+        });
+        
+        // Apply to image captions
+        document.querySelectorAll('#galleryModal .group').forEach(item => {
+            item.classList.add('opacity-0', 'translate-y-4', 'transition-all', 'duration-500');
+            observer.observe(item);
+        });
+    });
+</script>

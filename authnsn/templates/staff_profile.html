@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Staff Profile</title>
+    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+    <script>
+        // Session management
+        document.body.addEventListener('htmx:configRequest', function(evt) {
+            // Session ID is automatically included in cookies
+        });
+
+        // Handle successful login redirect
+        document.body.addEventListener('htmx:afterSettle', function(evt) {
+            if (evt.detail.xhr.status === 200 && evt.detail.xhr.getResponseHeader('HX-Redirect')) {
+                window.location.href = evt.detail.xhr.getResponseHeader('HX-Redirect');
+            }
+        });
+
+        // Authentication verification on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            const session_id = document.cookie.split('; ').find(row => row.startsWith('session_id='));
+            if (!session_id) {
+                window.location.href = '/staff/login/';
+            }
+        });
+        
+        // Handle profile image upload
+        function handleFileUpload(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('profile-img').src = e.target.result;
+                };
+                reader.readAsDataURL(file);
+                
+                // Here you would typically upload the file to your server
+                // This is just a placeholder for the UI demonstration
+            }
+        }
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: 'Montserrat', sans-serif;
+        }
+        .profile-card {
+            background: linear-gradient(to right bottom, #ffffff, #f8f9fa);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+            border-radius: 16px;
+            border: 1px solid rgba(230, 230, 230, 0.5);
+        }
+        .profile-header {
+            background: linear-gradient(to right, #3b82f6, #1e40af);
+            border-radius: 16px 16px 0 0;
+        }
+        .profile-img-container {
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+        }
+        .info-section {
+            border-left: 3px solid #3b82f6;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 font-sans">
+    <div class="max-w-4xl mx-auto p-6 mt-12 mb-12">
+        <div class="profile-card">
+            <!-- Profile Header -->
+            <div class="profile-header p-8 flex justify-between items-center">
+                <h1 class="text-3xl font-bold text-white">Staff Profile</h1>
+                
+            </div>
+            
+            <!-- Profile Content -->
+            <div class="p-8">
+                <!-- Profile Picture Section -->
+                <div class="flex flex-col md:flex-row items-center mb-10">
+                    <div class="profile-img-container relative mb-6 md:mb-0 md:mr-8">
+                        <img id="profile-img" src="https://via.placeholder.com/150" alt="Profile Picture" 
+                             class="w-36 h-36 rounded-full border-4 border-white bg-white object-cover">
+                        <label for="file-upload" class="absolute bottom-0 right-0 bg-blue-600 text-white rounded-full p-2 cursor-pointer hover:bg-blue-700 transition-colors duration-300 shadow-lg">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+                            </svg>
+                        </label>
+                        <input id="file-upload" type="file" accept="image/*" onchange="handleFileUpload(event)" class="hidden">
+                    </div>
+                    
+                    <div class="info-section pl-4 py-2 w-full md:w-auto">
+                        <h2 class="text-xl font-semibold text-gray-800 mb-4">Personal Information</h2>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-gray-700">
+                            <div>
+                                <p class="flex items-center mb-2">
+                                    <span class="w-28 text-sm font-medium text-gray-500">Staff ID:</span>
+                                    <span id="roll_number" class="font-medium">{{ staff_id }}</span>
+                                </p>
+                               
+                                <p class="flex items-center">
+                                    <span class="w-28 text-sm font-medium text-gray-500">Email:</span>
+                                    <span id="email" class="font-medium">{{ email }}</span>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Action Buttons -->
+                <div class="flex flex-col md:flex-row justify-between items-center mt-8 pt-6 border-t border-gray-200">
+                    <a href="/staff/dash/" class="flex items-center text-blue-600 hover:text-blue-800 mb-4 md:mb-0 group transition-colors duration-200">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5 mr-2 group-hover:transform group-hover:-translate-x-1 transition-transform duration-200">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                        </svg>
+                        <span class="font-medium">Return to Dashboard</span>
+                    </a>
+                    
+                    <button class="bg-gradient-to-r from-red-500 to-red-600 text-white px-6 py-2 rounded-lg hover:shadow-lg transition-all duration-300 transform hover:-translate-y-0.5"
+                            hx-post="/logout/"
+                            hx-trigger="click"
+                            hx-target="body">
+                        Logout
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

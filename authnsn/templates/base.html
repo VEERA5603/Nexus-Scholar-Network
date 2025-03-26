@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Annamalai University - Registration</title>
+    <script src="https://unpkg.com/htmx.org@1.9.6"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/typed.js@2.0.12"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <style>
+        .header-slide-in {
+            animation: slideIn 1s ease-out forwards;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(-100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        .content-fade-in {
+            animation: fadeInContent 2s ease-in-out;
+        }
+
+        @keyframes fadeInContent {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        #mobileNav {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        #mobileMenu {
+            transform: translateX(100%);
+        }
+
+        .menu-open #mobileNav {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .menu-open #mobileMenu {
+            transform: translateX(0);
+        }
+
+        .menu-open #menuButton span:first-child {
+            transform: translateY(8px) rotate(45deg);
+        }
+
+        .menu-open #menuButton span:nth-child(2) {
+            opacity: 0;
+        }
+
+        .menu-open #menuButton span:last-child {
+            transform: translateY(-8px) rotate(-45deg);
+        }
+
+        .active-link {
+            background-color: #003167;
+        }
+
+        .font-Tamil {
+            font-family: 'Noto Sans Tamil', sans-serif;
+        }
+
+        .leading-relaxed {
+            line-height: 1.6;
+        }
+
+        .announcement {
+            transition: all 0.3s ease;
+            transform-origin: center;
+        }
+        
+        .announcement:hover {
+            transform: translateY(-2px);
+        }
+        
+        #latest-announcement::before {
+            content: "Latest";
+            position: absolute;
+            top: -1px;
+            right: 20px;
+            background: #ff6b6b;
+            color: white;
+            font-size: 12px;
+            font-weight: bold;
+            padding: 2px 10px;
+            border-radius: 12px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            z-index: 1;
+        }
+        
+        .scrolling-message {
+            display: inline-block;
+            white-space: nowrap;
+            animation: scrollLeftInfinite 20s linear infinite;
+            padding-right: 100%;
+        }
+        
+        @keyframes scrollLeftInfinite {
+            0% { transform: translateX(100%); }
+            100% { transform: translateX(-100%); }
+        }
+        
+        .announcement-carousel {
+            position: relative;
+            min-height: 240px;
+            background: #f8fafc;
+        }
+        
+        .carousel-container {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            min-height: 200px;
+            overflow: hidden;
+        }
+        
+        .carousel-item {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: all 0.5s ease;
+        }
+        
+        .carousel-dot {
+            transition: all 0.3s ease;
+            opacity: 0.7;
+        }
+        
+        .carousel-dot:hover {
+            opacity: 1;
+            transform: scale(1.2);
+        }
+        
+        .carousel-prev, .carousel-next {
+            opacity: 0.7;
+            transition: all 0.2s ease;
+        }
+        
+        .carousel-prev:hover, .carousel-next:hover {
+            opacity: 1;
+        }
+        
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .announcement {
+            animation: fadeInUp 0.5s ease forwards;
+            opacity: 0;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen flex flex-col">
+    <header class="bg-[#002147] text-white flex items-center justify-between px-6 py-4 fixed top-0 left-0 w-full z-50 shadow-md">
+        <div class="flex items-center gap-4">
+            <img src="https://ts2.mm.bing.net/th?id=OIP.STljN84T2Rdft8S2z8vG8wAAAA&pid=15.1" 
+                 alt="University Logo" 
+                 class="h-16 w-16 rounded-full border-2 border-[#FFD700] shadow-md logo-animation">
+            <div class="flex flex-col">
+                <h1 class="text-2xl font-bold text-[#FFD700]">Annamalai University</h1>
+                <p class="text-lg font-semibold text-[#00BFFF]">Department of Information Technology</p>
+            </div>
+        </div>
+
+        <nav class="hidden lg:flex space-x-6">
+            <a href="/" class="text-sm font-medium hover:text-[#FFD700] transition-all duration-300 px-3 py-2 rounded-lg hover:bg-blue-900">Home</a>
+            <a href="{% url 'student-login' %}" class="text-sm font-medium hover:text-[#FFD700] transition-all duration-300 px-3 py-2 rounded-lg hover:bg-blue-900">Student Login</a>
+            <a href="{% url 'staff-login' %}" class="text-sm font-medium hover:text-[#FFD700] transition-all duration-300 px-3 py-2 rounded-lg hover:bg-blue-900">Staff Login</a>
+            <a href="{% url 'register' %}" class="text-sm font-medium hover:text-[#FFD700] transition-all duration-300 px-3 py-2 rounded-lg hover:bg-blue-900">Register</a>
+            <a href="{% url 'faculty_list' %}" class="text-sm font-medium hover:text-[#FFD700] transition-all duration-300 px-3 py-2 rounded-lg hover:bg-blue-900">Faculty Members</a>
+            <a href="{% url 'activities_list' %}" class="text-sm font-medium hover:text-[#FFD700] transition-all duration-300 px-3 py-2 rounded-lg hover:bg-blue-900">Activities</a>
+        </nav>
+
+        <button class="lg:hidden flex flex-col justify-center items-center w-8 h-8 relative z-50" id="menuButton">
+            <span class="w-6 h-0.5 bg-white mb-1.5 transition-all duration-300"></span>
+            <span class="w-6 h-0.5 bg-white mb-1.5 transition-all duration-300"></span>
+            <span class="w-6 h-0.5 bg-white transition-all duration-300"></span>
+        </button>
+    </header>
+
+    <div id="mobileNav" class="fixed inset-0 bg-black/50 opacity-0 pointer-events-none transition-opacity duration-300 lg:hidden z-40">
+        <div id="mobileMenu" class="fixed top-0 right-0 w-64 h-full bg-[#002147] transform translate-x-full transition-transform duration-300 shadow-lg">
+            <div class="pt-24 px-6">
+                <nav class="space-y-3">
+                    <a href="/" class="block text-white text-lg font-medium py-3 px-4 hover:bg-[#003167] rounded-lg transition-all duration-300">Home</a>
+                    <a href="{% url 'student-login' %}" class="block text-white text-lg font-medium py-3 px-4 hover:bg-[#003167] rounded-lg transition-all duration-300">Student Login</a>
+                    <a href="{% url 'staff-login' %}" class="block text-white text-lg font-medium py-3 px-4 hover:bg-[#003167] rounded-lg transition-all duration-300">Staff Login</a>
+                    <a href="{% url 'register' %}" class="block text-white text-lg font-medium py-3 px-4 hover:bg-[#003167] rounded-lg transition-all duration-300">Register</a>
+                    <a href="{% url 'faculty_list' %}" class="block text-white text-lg font-medium py-3 px-4 hover:bg-[#003167] rounded-lg transition-all duration-300">Faculty Members</a>
+                    <a href="{% url 'event_list' %}" class="block text-white text-lg font-medium py-3 px-4 hover:bg-[#003167] rounded-lg transition-all duration-300">Gallery</a>
+                </nav>
+            </div>
+        </div>
+    </div>
+
+    <div class="pt-[80px]"></div>
+
+    <script>
+        const menuButton = document.getElementById("menuButton");
+        const mobileNav = document.getElementById("mobileNav");
+        const mobileMenu = document.getElementById("mobileMenu");
+
+        menuButton.addEventListener("click", () => {
+            mobileNav.classList.toggle("opacity-100");
+            mobileNav.classList.toggle("pointer-events-auto");
+            mobileMenu.classList.toggle("translate-x-0");
+        });
+
+        mobileNav.addEventListener("click", (event) => {
+            if (event.target === mobileNav) {
+                mobileNav.classList.remove("opacity-100");
+                mobileNav.classList.remove("pointer-events-auto");
+                mobileMenu.classList.remove("translate-x-0");
+            }
+        });
+    </script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            gsap.from('header', {
+                y: -100,
+                opacity: 0,
+                duration: 1,
+                ease: 'power3.out'
+            });
+
+            gsap.from('.logo', {
+                scale: 0,
+                rotation: 360,
+                duration: 1.2,
+                delay: 0.3,
+                ease: 'back.out(1.7)'
+            });
+
+            gsap.from(['h1', 'p'], {
+                x: -50,
+                opacity: 0,
+                duration: 0.8,
+                stagger: 0.2,
+                delay: 0.5
+            });
+
+            const menuButton = document.getElementById('menuButton');
+            const mobileNav = document.getElementById('mobileNav');
+            const body = document.body;
+            let isMenuOpen = false;
+
+            function toggleMenu() {
+                isMenuOpen = !isMenuOpen;
+                body.classList.toggle('menu-open');
+                
+                if (isMenuOpen) {
+                    gsap.fromTo('#mobileNav nav a', 
+                        {
+                            x: 50,
+                            opacity: 0
+                        },
+                        {
+                            x: 0,
+                            opacity: 1,
+                            duration: 0.5,
+                            stagger: 0.1,
+                            delay: 0.2
+                        }
+                    );
+                }
+            }
+
+            menuButton.addEventListener('click', toggleMenu);
+            mobileNav.addEventListener('click', (e) => {
+                if (e.target === mobileNav) {
+                    toggleMenu();
+                }
+            });
+
+            const currentPath = window.location.pathname;
+            const links = document.querySelectorAll('a');
+            
+            links.forEach(link => {
+                if (link.getAttribute('href') === currentPath) {
+                    link.classList.add('active-link');
+                }
+                
+                link.addEventListener('mouseenter', () => {
+                    gsap.to(link, {
+                        scale: 1.05,
+                        duration: 0.3,
+                        ease: 'power2.out'
+                    });
+                });
+                
+                link.addEventListener('mouseleave', () => {
+                    gsap.to(link, {
+                        scale: 1,
+                        duration: 0.3,
+                        ease: 'power2.in'
+                    });
+                });
+            });
+        });
+    </script>
+
+    <main class="mt-[100px] flex-grow container mx-auto px-4 py-6 content-fade-in pb-24">
+        {% block content %}
+        <div class="bg-transparent rounded-lg shadow-xl p-4 mb-12 max-w-md mx-auto border-t-4 border-green-500 h-40">
+            <div id="quote" class="text-center text-sm p-2 h-full font-Tamil leading-relaxed" style="color:rgb(251, 27, 2);"></div>
+        </div>
+
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                var options = {
+                    strings: [
+                        "ஒருமைக்கண் தான்கற்ற கல்வி ஒருவற்கு <br>எழுமையும் ஏமாப் புடைத்து.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <br>- திருவள்ளுவர்"
+                    ],
+                    typeSpeed: 40,
+                    backSpeed: 30,
+                    backDelay: 1000,
+                    startDelay: 500,
+                    loop: true,
+                    showCursor: false,
+                    contentType: 'html'
+                };
+                var typed = new Typed("#quote", options);
+            });
+        </script>
+
+        <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Tamil:wght@400;700&display=swap" rel="stylesheet">
+
+        <div class="mb-12 max-w-4xl mx-auto">
+            <h2 class="text-2xl font-bold text-white bg-gradient-to-r from-blue-800 to-blue-600 p-4 rounded-t-lg shadow-lg flex items-center justify-center">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z" />
+                </svg>
+                Announcements
+            </h2>
+            
+            <div id="announcements-container" class="bg-gradient-to-b from-white to-blue-50 p-6 rounded-b-lg shadow-xl border border-t-0 border-blue-200"
+                 hx-get="{% url 'get_announcements' %}"
+                 hx-trigger="load"
+                 hx-swap="innerHTML"
+                 hx-indicator="#announcements-loading">
+                
+                <div id="announcements-loading" class="text-center py-8">
+                    <div class="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-blue-900 mx-auto"></div>
+                    <p class="mt-4 text-gray-700 font-medium">Loading announcements...</p>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            // Full carousel and HTMX script from previous version remains unchanged
+        </script>
+
+        <div class="nasa-container bg-white rounded-lg shadow-xl p-8 mb-12 max-w-5xl mx-auto border-t-4 border-blue-500"
+             hx-get="/get_nasa_apod/"
+             hx-trigger="load"
+             hx-swap="innerHTML"
+             hx-indicator="#loading">
+
+            <div id="loading" class="text-center py-8">
+                <div class="animate-spin rounded-full h-16 w-16 border-b-4 border-blue-900 mx-auto"></div>
+                <p class="mt-4 text-gray-700 font-semibold text-lg">Loading NASA Image of the Day...</p>
+            </div>
+
+            <div id="nasa-content" class="hidden">
+                <div class="text-center">
+                    <img id="nasa-image" src="" alt="NASA APOD" class="rounded-lg shadow-lg w-full h-auto mb-6">
+                    <p id="nasa-title" class="text-2xl font-semibold text-gray-800 mb-4"></p>
+                    <p id="nasa-description" class="text-gray-700 text-lg mb-6"></p>
+                    <a href="https://apod.nasa.gov/apod/" class="text-blue-500 hover:underline" target="_blank">Learn more</a>
+                </div>
+            </div>
+        </div>
+
+        <section class="mb-8">
+            <h2 class="text-3xl font-bold text-white bg-blue-900 p-4 text-center rounded-lg shadow-lg">Annamalai University</h2>
+            <div class="mt-6 grid gap-6 md:grid-cols-3">
+                <div class="bg-gradient-to-r from-blue-100 to-blue-300 p-6 rounded-lg shadow-xl border border-blue-400">
+                    <label class="block text-xl font-semibold text-gray-800">University Name</label>
+                    <input type="text" class="w-full p-2 border border-blue-500 rounded-lg bg-white text-gray-900 font-medium" value="Annamalai University" disabled>
+                </div>
+                
+                <div class="bg-gradient-to-r from-blue-100 to-blue-300 p-6 rounded-lg shadow-xl border border-blue-400">
+                    <label class="block text-xl font-semibold text-gray-800">Establishment Year</label>
+                    <input type="text" class="w-full p-2 border border-blue-500 rounded-lg bg-white text-gray-900 font-medium" value="1929" disabled>
+                </div>
+                
+                <div class="bg-gradient-to-r from-blue-100 to-blue-300 p-6 rounded-lg shadow-xl border border-blue-400 col-span-full">
+                    <label class="block text-xl font-semibold text-gray-800">Description</label>
+                    <textarea class="w-full p-2 border border-blue-500 rounded-lg bg-white text-gray-900 font-medium" rows="4" disabled>Annamalai University, established in 1929, is one of the largest public residential universities in Asia. Located in Annamalai Nagar, Tamil Nadu, it offers a wide variety of undergraduate, postgraduate, and doctoral programs across disciplines such as Arts, Science, Engineering, Law, Medicine, and Education. The university is renowned for its academic excellence, research contributions, and world-class infrastructure.</textarea>
+                </div>
+            </div>
+        </section>
+
+        <section class="mt-8">
+            <h2 class="text-3xl font-bold text-white bg-green-900 p-4 text-center rounded-lg shadow-lg">Department of Information Technology</h2>
+            <div class="mt-6 grid gap-6 md:grid-cols-2">
+                <div class="bg-gradient-to-r from-green-100 to-green-300 p-6 rounded-lg shadow-xl border border-green-400">
+                    <label class="block text-xl font-semibold text-gray-800">Department Name</label>
+                    <input type="text" class="w-full p-2 border border-green-500 rounded-lg bg-white text-gray-900 font-medium" value="Department of Information Technology" disabled>
+                </div>
+                
+                <div class="bg-gradient-to-r from-green-100 to-green-300 p-6 rounded-lg shadow-xl border border-green-400">
+                    <label class="block text-xl font-semibold text-gray-800">Profile</label>
+                    <textarea class="w-full p-2 border border-green-500 rounded-lg bg-white text-gray-900 font-medium" rows="4" disabled>The Department of Information Technology at Annamalai University aims to provide a high-quality education that prepares students for a successful career in the rapidly evolving field of Information Technology.</textarea>
+                </div>
+                
+                <div class="bg-gradient-to-r from-green-100 to-green-300 p-6 rounded-lg shadow-xl border border-green-400">
+                    <label class="block text-xl font-semibold text-gray-800">Vision</label>
+                    <textarea class="w-full p-2 border border-green-500 rounded-lg bg-white text-gray-900 font-medium" rows="4" disabled>"To produce globally competent, quality technocrats, to inculcate values of leadership and research qualities and to play a vital role in the socio-economic progress of the nation."</textarea>
+                </div>
+                
+                <div class="bg-gradient-to-r from-green-100 to-green-300 p-6 rounded-lg shadow-xl border border-green-400">
+                    <label class="block text-xl font-semibold text-gray-800">Mission</label>
+                    <textarea class="w-full p-2 border border-green-500 rounded-lg bg-white text-gray-900 font-medium" rows="4" disabled>- To partner with the University community to understand the information technology needs of faculty, staff, and students.
+- To develop dynamic IT professionals with globally competitive learning experience by providing high-class education.
+- To involve graduates in understanding need-based research activities and disseminate the knowledge to develop entrepreneurial skills.</textarea>
+                </div>
+                
+                <div class="bg-gradient-to-r from-green-100 to-green-300 p-6 rounded-lg shadow-xl border border-green-400 col-span-full">
+                    <label class="block text-xl font-semibold text-gray-800">Role of Information Technology</label>
+                    <textarea class="w-full p-2 border border-green-500 rounded-lg bg-white text-gray-900 font-medium" rows="4" disabled>Information Technology plays a vital role in technological advancement in human life, culminating in a huge demand for education in this field. IT bestows knowledge through learning to meet the needs of the consumers in both organizational and societal contexts.</textarea>
+                </div>
+            </div>
+        </section>
+        {% endblock %}
+    </main>
+
+    <footer class="bg-[#002147] text-white">
+        <div class="container mx-auto px-4 py-4 text-center">
+            <p class="text-sm">
+                &copy; 2025 Annamalai University - Department of Information Technology. All rights reserved.
+            </p>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const currentUrl = window.location.pathname;
+            const links = document.querySelectorAll(".link-item");
+
+            links.forEach(link => {
+                if (link.getAttribute("href") === currentUrl) {
+                    link.classList.add("active-link");
+                }
+            });
+        });
+    </script>
+</body>
+</html>

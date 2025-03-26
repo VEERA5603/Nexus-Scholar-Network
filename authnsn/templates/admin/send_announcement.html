@@ -1,0 +1,50 @@
+{% extends "admin/base_site.html" %}
+{% load i18n admin_urls %}
+
+{% block content %}
+<div id="content-main">
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        
+        <fieldset class="module aligned">
+            <div class="form-row">
+                <div class="field-box">
+                    <label for="title">Title:</label>
+                    <input type="text" name="title" id="title" required class="vTextField">
+                </div>
+            </div>
+            
+            <div class="form-row">
+                <div class="field-box">
+                    <label for="message">Message:</label>
+                    <textarea name="message" id="message" required class="vLargeTextField" rows="5"></textarea>
+                </div>
+            </div>
+            
+            <div class="form-row">
+                <div class="field-box">
+                    <label for="priority">Priority:</label>
+                    <select name="priority" id="priority">
+                        {% for key, value in priorities %}
+                        <option value="{{ key }}">{{ value }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+            
+            <div class="form-row">
+                <div class="field-box">
+                    <label for="images">Images:</label>
+                    <input type="file" name="images" id="images" multiple class="vFileField" accept="image/*">
+                    <p class="help">You can select multiple images. Images will be displayed in a carousel.</p>
+                </div>
+            </div>
+        </fieldset>
+        
+        <div class="submit-row">
+            <input type="submit" value="Send Announcement" class="default">
+            <a href="{% url 'admin:authnsn_announcement_changelist' %}" class="button cancel-link">Cancel</a>
+        </div>
+    </form>
+</div>
+{% endblock %}
